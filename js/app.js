@@ -1,6 +1,7 @@
 import { PACE_TABLE, fmtPace } from "./paces.js";
 import { WORKOUTS } from "./workouts.js";
 import { buildWorkoutFit, workoutName } from "./fitgen.js";
+import { SCHEDULE, DAY_HEADERS, TYPE_INFO } from "./schedule.js";
 
 const goalSelect = document.getElementById("goal-select");
 const paceSummary = document.getElementById("pace-summary");
@@ -98,6 +99,27 @@ zipBtn.addEventListener("click", async () => {
   }
 });
 
+function renderCalendar() {
+  const legend = document.getElementById("calendar-legend");
+  legend.innerHTML = Object.values(TYPE_INFO)
+    .map(info => `<span class="legend-item ${info.cls}">${info.name}</span>`)
+    .join("");
+
+  const table = document.getElementById("calendar");
+  const head = `<tr><th>週次</th>${DAY_HEADERS.map(d => `<th>${d}</th>`).join("")}<th>週跑量</th></tr>`;
+  const rows = SCHEDULE.map((week, wi) => {
+    const total = week.reduce((sum, day) => sum + day.d, 0);
+    const cells = week.map(day => {
+      const info = TYPE_INFO[day.t];
+      const sub = day.t === "rest" ? "" : `<span class="cal-label">${day.label}</span>`;
+      return `<td class="${info.cls}"><span class="cal-type">${info.name}</span>${sub}</td>`;
+    }).join("");
+    const totalTxt = Math.round(total * 10) / 10;
+    return `<tr><th>W${wi + 1}</th>${cells}<td class="cal-total">${totalTxt}K</td></tr>`;
+  }).join("");
+  table.innerHTML = head + rows;
+}
+
 goalSelect.addEventListener("change", () => {
   renderPaceSummary();
   renderWorkoutList();
@@ -105,3 +127,4 @@ goalSelect.addEventListener("change", () => {
 
 renderPaceSummary();
 renderWorkoutList();
+renderCalendar();
