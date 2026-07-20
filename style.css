@@ -107,7 +107,7 @@ button.primary:hover { background: var(--navy-deep); }
   flex-direction: column;
 }
 
-.pace-label { font-size: 12px; color: #a8bbcb; }
+.pace-label { font-size: 13px; font-weight: 700; color: #ffffff; }
 
 .pace-value {
   font-size: 20px;

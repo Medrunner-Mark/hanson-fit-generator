@@ -14,7 +14,7 @@ export function paceRange(step, tier) {
       // 恢復跑(慢端) ~ 輕鬆有氧A(快端)
       return [tier.recovery, tier.easyA];
     case "main": {
-      if (step.paceKey === "speed") return [tier.tenK, tier.fiveK]; // 10K(慢)~5K(快)
+      if (step.paceKey === "speed") return [tier.fiveK + 5, tier.fiveK - 5]; // 400m配速(=5K配速)±5s
       const center = step.mpOffset !== undefined
         ? tier.tempo + step.mpOffset      // 漸速跑：MP+偏移秒數
         : tier[step.paceKey];             // tempo / strength / long
@@ -42,8 +42,8 @@ export function stepNotes(step, tier) {
       }
       if (step.paceKey === "long") return `長跑配速 ${fmtPace(tier.long)}/km`;
       if (step.paceKey === "speed") {
-        const lapSec = Math.round(tier.fiveK * 0.4); // 400m一圈，以5K配速計
-        return `5-10K配速 每圈${lapSec}秒`;
+        const lapSec = Math.round(tier.fiveK * 0.4); // 400m一圈，以配速表400m配速計
+        return `${fmtPace(tier.fiveK)}/km 每圈${lapSec}秒`;
       }
       return "";
     default: return "";

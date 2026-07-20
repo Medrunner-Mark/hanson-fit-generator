@@ -25,16 +25,18 @@ function currentTier() {
 
 function renderPaceSummary() {
   const t = currentTier();
+  const lapSec = Math.round(t.fiveK * 0.4);
   const rows = [
-    ["恢復跑", fmtPace(t.recovery)],
-    ["輕鬆有氧", `${fmtPace(t.easyA)}~${fmtPace(t.easyB)}`],
-    ["長跑", fmtPace(t.long)],
-    ["節奏跑 (MP)", fmtPace(t.tempo)],
-    ["強化跑", fmtPace(t.strength)],
-    ["速度跑 (5-10K)", `${fmtPace(t.tenK)}~${fmtPace(t.fiveK)}`],
+    ["恢復跑", fmtPace(t.recovery), ""],
+    ["輕鬆有氧A", fmtPace(t.easyA), ""],
+    ["輕鬆有氧B", fmtPace(t.easyB), ""],
+    ["長跑", fmtPace(t.long), ""],
+    ["節奏跑 (MP)", fmtPace(t.tempo), ""],
+    ["強化跑", fmtPace(t.strength), ""],
+    ["速度跑", fmtPace(t.fiveK), `每圈${lapSec}s`],
   ];
   paceSummary.innerHTML = rows
-    .map(([k, v]) => `<div class="pace-cell"><span class="pace-label">${k}</span><span class="pace-value">${v}<small>/km</small></span></div>`)
+    .map(([k, v, sub]) => `<div class="pace-cell"><span class="pace-label">${k}</span><span class="pace-value">${v}<small>/km${sub ? `（${sub}）` : ""}</small></span></div>`)
     .join("");
 }
 
