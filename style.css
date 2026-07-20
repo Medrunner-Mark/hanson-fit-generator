@@ -136,6 +136,9 @@ button.primary:hover { background: var(--navy-deep); }
 
 .wname { color: var(--text); }
 
+.btn-group { display: flex; gap: 6px; }
+.btn-group button { font-size: 12px; padding: 4px 10px; }
+
 .hint { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
 
 .howto ol { padding-left: 22px; font-size: 14px; }

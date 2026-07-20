@@ -16,7 +16,8 @@
   <section class="control">
     <label for="goal-select">目標完賽時間</label>
     <select id="goal-select"></select>
-    <button id="zip-btn" class="primary">全部下載（ZIP，21 份課表）</button>
+    <button id="zip-btn" class="primary">FIT 全部下載（手錶用）</button>
+    <button id="json-zip-btn" class="primary">JSON 全部下載（Connect 用）</button>
     <span id="status"></span>
   </section>
 
@@ -41,11 +42,18 @@
   </section>
 
   <section class="howto">
-    <h2>怎麼匯入手錶</h2>
+    <h2>怎麼匯入手錶（FIT 檔）</h2>
     <ol>
       <li>用 USB 線把 Garmin 手錶接上電腦（手錶會顯示為隨身碟）。</li>
       <li>把下載的 .fit 檔案全部複製到手錶的 <code>GARMIN/NEWFILES</code> 資料夾。</li>
       <li>退出隨身碟、拔線，手錶上到「訓練 → 訓練課表」就能看到匯入的課表。</li>
+    </ol>
+    <h2>不想接線？匯入 Garmin Connect 網頁版（JSON 檔）</h2>
+    <ol>
+      <li>安裝瀏覽器外掛 <a href="https://chromewebstore.google.com/detail/share-your-garmin-connect/kdpolhnlnkengkmfncjdbfdehglepmff" target="_blank" rel="noopener">Share your Garmin Connect workout</a>（第三方開源外掛）。</li>
+      <li>下載上方的 .json 課表檔。</li>
+      <li>登入 <a href="https://connect.garmin.com/app/workouts" target="_blank" rel="noopener">Garmin Connect 的訓練課表頁</a>，按外掛加上的「Import Workout」按鈕選擇 .json 檔匯入（目前一次匯入一個）。</li>
+      <li>匯入後課表就在你的 Connect 帳號裡，可排入行事曆、由手機 App 同步到手錶，全程不用接線。</li>
     </ol>
     <p class="hint">所有計算與檔案產生都在你的瀏覽器裡完成，不會上傳任何資料。</p>
   </section>

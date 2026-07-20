@@ -5,7 +5,8 @@ import { Encoder, Profile } from "https://esm.sh/@garmin/fitsdk@21.171.0";
 import { fmtPace, paceToScaledMps, goalCode } from "./paces.js";
 
 // 各種 step 的配速區間（回傳 [慢端秒/km, 快端秒/km]）
-function paceRange(step, tier) {
+// export 供 jsongen.js 共用，確保 FIT 與 JSON 兩種格式的配速數字完全一致
+export function paceRange(step, tier) {
   switch (step.kind) {
     case "wu":
     case "cd":
@@ -24,7 +25,7 @@ function paceRange(step, tier) {
   }
 }
 
-function stepNotes(step, tier) {
+export function stepNotes(step, tier) {
   switch (step.kind) {
     case "wu": return "暖身 恢復跑配速";
     case "cd": return "收操 恢復跑配速";

@@ -1,6 +1,7 @@
 import { PACE_TABLE, fmtPace } from "./paces.js";
 import { WORKOUTS } from "./workouts.js";
 import { buildWorkoutFit, workoutName } from "./fitgen.js";
+import { workoutJsonText } from "./jsongen.js";
 import { SCHEDULE, DAY_HEADERS, TYPE_INFO } from "./schedule.js";
 
 const goalSelect = document.getElementById("goal-select");
@@ -64,13 +65,28 @@ function renderWorkoutList() {
       const li = document.createElement("li");
       const name = workoutName(w, t);
       li.innerHTML = `<span class="wname">${name}</span>`;
-      const btn = document.createElement("button");
-      btn.textContent = "下載";
-      btn.addEventListener("click", () => {
-        const bytes = buildWorkoutFit(w, t);
-        downloadBytes(bytes, `${name}.fit`);
+      const btns = document.createElement("span");
+      btns.className = "btn-group";
+      const fitBtn = document.createElement("button");
+      fitBtn.textContent = "FIT";
+      fitBtn.title = "下載 .fit（USB 匯入手錶）";
+      fitBtn.addEventListener("click", () => {
+        downloadBytes(buildWorkoutFit(w, t), `${name}.fit`);
       });
-      li.appendChild(btn);
+      const jsonBtn = document.createElement("button");
+      jsonBtn.textContent = "JSON";
+      jsonBtn.title = "下載 .json（外掛匯入 Garmin Connect 網頁版）";
+      jsonBtn.addEventListener("click", () => {
+        const blob = new Blob([workoutJsonText(w, t)], { type: "application/json;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${name}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      btns.appendChild(fitBtn);
+      btns.appendChild(jsonBtn);
+      li.appendChild(btns);
       ul.appendChild(li);
     }
     section.appendChild(ul);
@@ -78,26 +94,33 @@ function renderWorkoutList() {
   }
 }
 
-zipBtn.addEventListener("click", async () => {
+async function downloadZip(kind) {
   const t = currentTier();
   statusEl.textContent = "打包中…";
   try {
     const zip = new JSZip();
     for (const w of WORKOUTS) {
-      const bytes = buildWorkoutFit(w, t);
-      zip.file(`${workoutName(w, t)}.fit`, bytes);
+      const name = workoutName(w, t);
+      if (kind === "fit") {
+        zip.file(`${name}.fit`, buildWorkoutFit(w, t));
+      } else {
+        zip.file(`${name}.json`, workoutJsonText(w, t));
+      }
     }
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `漢森進階sub${t.goal.replace(":", "")}_全套課表.zip`;
+    a.download = `漢森進階sub${t.goal.replace(":", "")}_全套課表_${kind.toUpperCase()}.zip`;
     a.click();
     URL.revokeObjectURL(a.href);
     statusEl.textContent = "";
   } catch (err) {
     statusEl.textContent = "打包失敗：" + err.message;
   }
-});
+}
+
+zipBtn.addEventListener("click", () => downloadZip("fit"));
+document.getElementById("json-zip-btn").addEventListener("click", () => downloadZip("json"));
 
 function renderCalendar() {
   const legend = document.getElementById("calendar-legend");
