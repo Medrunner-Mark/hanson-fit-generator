@@ -132,4 +132,14 @@ export const WORKOUTS = [
   { id: "long_26k", category: "長跑", label: "長跑26K", steps: [
     { kind: "main", dist: 26000, paceKey: "long" },
   ]},
+
+  // ─── 替代課表 ───
+  // 90min出國漸速跑：出國/出差短暫缺席訓練時的體能維持課表（影片PART 4）。
+  // 三段各30分鐘：MP+60s → MP+30s → MP，最後開放式收操。
+  { id: "prog_90min", category: "替代課表", label: "90min出國漸速跑", steps: [
+    { kind: "main", time: 1800, mpOffset: 60 },
+    { kind: "main", time: 1800, mpOffset: 30 },
+    { kind: "main", time: 1800, mpOffset: 0 },
+    { kind: "open_cd" },
+  ]},
 ];

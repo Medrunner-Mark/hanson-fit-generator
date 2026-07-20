@@ -12,10 +12,13 @@ function paceRange(step, tier) {
     case "jog":
       // 恢復跑(慢端) ~ 輕鬆有氧A(快端)
       return [tier.recovery, tier.easyA];
-    case "main":
+    case "main": {
       if (step.paceKey === "speed") return [tier.tenK, tier.fiveK]; // 10K(慢)~5K(快)
-      const center = tier[step.paceKey]; // tempo / strength / long
+      const center = step.mpOffset !== undefined
+        ? tier.tempo + step.mpOffset      // 漸速跑：MP+偏移秒數
+        : tier[step.paceKey];             // tempo / strength / long
       return [center + 5, center - 5];
+    }
     default:
       return null;
   }
@@ -27,6 +30,10 @@ function stepNotes(step, tier) {
     case "cd": return "收操 恢復跑配速";
     case "jog": return "組間恢復跑";
     case "main":
+      if (step.mpOffset !== undefined) {
+        const label = step.mpOffset > 0 ? `MP+${step.mpOffset}s` : "MP";
+        return `${label} ${fmtPace(tier.tempo + step.mpOffset)}/km`;
+      }
       if (step.paceKey === "tempo") return `馬拉松配速 ${fmtPace(tier.tempo)}/km`;
       if (step.paceKey === "strength") {
         const gap = tier.tempo - tier.strength;
@@ -89,12 +96,28 @@ export function buildWorkoutFit(workout, tier) {
       return;
     }
 
+    if (step.kind === "open_cd") {
+      // 開放式收操：不設時間與配速，按圈自行結束（與原始漸速跑檔案一致）
+      encoder.writeMesg({
+        mesgNum: Profile.MesgNum.WORKOUT_STEP,
+        messageIndex: i,
+        durationType: "open",
+        targetType: "open",
+        targetValue: 0,
+        intensity: "cooldown",
+        notes: "收操",
+      });
+      return;
+    }
+
     const [slow, fast] = paceRange(step, tier);
+    const duration = step.time !== undefined
+      ? { durationType: "time", durationValue: step.time * 1000 }   // 秒 → 毫秒（FIT scale 1000）
+      : { durationType: "distance", durationValue: step.dist * 100 }; // 公尺 → 公分（FIT scale 100）
     encoder.writeMesg({
       mesgNum: Profile.MesgNum.WORKOUT_STEP,
       messageIndex: i,
-      durationType: "distance",
-      durationValue: step.dist * 100, // 公尺 → 公分（FIT scale 100）
+      ...duration,
       targetType: "speed",
       targetValue: 0,
       customTargetValueLow: paceToScaledMps(slow),  // 慢端 = 較低速度
