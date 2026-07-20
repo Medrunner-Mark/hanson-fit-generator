@@ -1,0 +1,108 @@
+// FIT 編碼模組：課表模板 + 配速檔位 → 合法的 Garmin workout FIT 檔（Uint8Array）。
+// 使用 Garmin 官方 JS SDK（瀏覽器端執行，不經任何伺服器）。
+
+import { Encoder, Profile } from "https://esm.sh/@garmin/fitsdk@21.171.0";
+import { fmtPace, paceToScaledMps, goalCode } from "./paces.js";
+
+// 各種 step 的配速區間（回傳 [慢端秒/km, 快端秒/km]）
+function paceRange(step, tier) {
+  switch (step.kind) {
+    case "wu":
+    case "cd":
+    case "jog":
+      // 恢復跑(慢端) ~ 輕鬆有氧A(快端)
+      return [tier.recovery, tier.easyA];
+    case "main":
+      if (step.paceKey === "speed") return [tier.tenK, tier.fiveK]; // 10K(慢)~5K(快)
+      const center = tier[step.paceKey]; // tempo / strength / long
+      return [center + 5, center - 5];
+    default:
+      return null;
+  }
+}
+
+function stepNotes(step, tier) {
+  switch (step.kind) {
+    case "wu": return "暖身 恢復跑配速";
+    case "cd": return "收操 恢復跑配速";
+    case "jog": return "組間恢復跑";
+    case "main":
+      if (step.paceKey === "tempo") return `馬拉松配速 ${fmtPace(tier.tempo)}/km`;
+      if (step.paceKey === "strength") {
+        const gap = tier.tempo - tier.strength;
+        return `MP-${gap}s ${fmtPace(tier.strength)}/km`;
+      }
+      if (step.paceKey === "long") return `長跑配速 ${fmtPace(tier.long)}/km`;
+      if (step.paceKey === "speed") {
+        const lapSec = Math.round(tier.fiveK * 0.4); // 400m一圈，以5K配速計
+        return `5-10K配速 每圈${lapSec}秒`;
+      }
+      return "";
+    default: return "";
+  }
+}
+
+function intensityOf(step) {
+  switch (step.kind) {
+    case "wu": return "warmup";
+    case "cd": return "cooldown";
+    case "jog": return "recovery";
+    default: return "active";
+  }
+}
+
+// 顯示/檔名用名稱："漢森進階sub255_長跑26K"
+export function workoutName(workout, tier) {
+  return `漢森進階sub${goalCode(tier.goal)}_${workout.label}`;
+}
+
+export function buildWorkoutFit(workout, tier) {
+  const encoder = new Encoder();
+
+  encoder.writeMesg({
+    mesgNum: Profile.MesgNum.FILE_ID,
+    type: "workout",
+    manufacturer: "garmin",
+    product: 65534, // garmin_product: connect（與原始檔案一致）
+    timeCreated: new Date(),
+    serialNumber: Math.floor(Math.random() * 0xfffffffe) + 1,
+  });
+
+  encoder.writeMesg({
+    mesgNum: Profile.MesgNum.WORKOUT,
+    wktName: workoutName(workout, tier),
+    sport: "running",
+    subSport: "generic",
+    numValidSteps: workout.steps.length,
+  });
+
+  workout.steps.forEach((step, i) => {
+    if (step.kind === "repeat") {
+      encoder.writeMesg({
+        mesgNum: Profile.MesgNum.WORKOUT_STEP,
+        messageIndex: i,
+        durationType: "repeatUntilStepsCmplt",
+        durationValue: step.backTo,
+        targetType: "open",
+        targetValue: step.times,
+      });
+      return;
+    }
+
+    const [slow, fast] = paceRange(step, tier);
+    encoder.writeMesg({
+      mesgNum: Profile.MesgNum.WORKOUT_STEP,
+      messageIndex: i,
+      durationType: "distance",
+      durationValue: step.dist * 100, // 公尺 → 公分（FIT scale 100）
+      targetType: "speed",
+      targetValue: 0,
+      customTargetValueLow: paceToScaledMps(slow),  // 慢端 = 較低速度
+      customTargetValueHigh: paceToScaledMps(fast), // 快端 = 較高速度
+      intensity: intensityOf(step),
+      notes: stepNotes(step, tier),
+    });
+  });
+
+  return encoder.close();
+}

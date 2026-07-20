@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>漢森進階版課表產生器｜Med日跑者</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="card">
+  <header>
+    <h1>漢森進階版課表產生器</h1>
+    <p class="subtitle">選擇你的全馬目標時間，下載整套 18 週訓練的 .fit 課表檔案，直接匯入 Garmin 手錶。</p>
+  </header>
+
+  <section class="control">
+    <label for="goal-select">目標完賽時間</label>
+    <select id="goal-select"></select>
+    <button id="zip-btn" class="primary">全部下載（ZIP，20 份課表）</button>
+    <span id="status"></span>
+  </section>
+
+  <section>
+    <h2>你的訓練配速</h2>
+    <div id="pace-summary" class="pace-grid"></div>
+  </section>
+
+  <section>
+    <h2>課表清單</h2>
+    <p class="hint">重複的課表只需要一份——在手錶或 Garmin Connect 裡同一份課表可以重複安排到不同週次。各課表對應週次請參考影片說明。</p>
+    <div id="workout-list"></div>
+  </section>
+
+  <section class="howto">
+    <h2>怎麼匯入手錶</h2>
+    <ol>
+      <li>用 USB 線把 Garmin 手錶接上電腦（手錶會顯示為隨身碟）。</li>
+      <li>把下載的 .fit 檔案全部複製到手錶的 <code>GARMIN/NEWFILES</code> 資料夾。</li>
+      <li>退出隨身碟、拔線，手錶上到「訓練 → 訓練課表」就能看到匯入的課表。</li>
+    </ol>
+    <p class="hint">所有計算與檔案產生都在你的瀏覽器裡完成，不會上傳任何資料。</p>
+  </section>
+
+  <footer>
+    <p>課表結構與配速依據《漢森馬拉松訓練法》進階版（Advanced）｜工具由 Med日跑者 製作</p>
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
