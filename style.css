@@ -15,6 +15,7 @@ body {
   font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
+  font-size: 17px;
   line-height: 1.7;
   padding: 24px 16px;
 }
@@ -29,18 +30,18 @@ body {
 }
 
 header h1 {
-  font-size: 26px;
+  font-size: 28px;
   color: var(--navy);
 }
 
 .subtitle {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 6px;
 }
 
 h2 {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--navy);
   margin: 28px 0 10px;
   padding-top: 18px;
@@ -56,12 +57,12 @@ h2 {
 }
 
 .control label {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--muted);
 }
 
 select {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   padding: 8px 14px;
   border: 1px solid var(--line);
@@ -71,7 +72,7 @@ select {
 }
 
 button {
-  font-size: 14px;
+  font-size: 16px;
   padding: 8px 14px;
   border: 1px solid var(--navy);
   border-radius: 8px;
@@ -91,7 +92,7 @@ button.primary {
 
 button.primary:hover { background: var(--navy-deep); }
 
-#status { font-size: 13px; color: var(--muted); }
+#status { font-size: 15px; color: var(--muted); }
 
 .pace-grid {
   display: grid;
@@ -107,18 +108,18 @@ button.primary:hover { background: var(--navy-deep); }
   flex-direction: column;
 }
 
-.pace-label { font-size: 13px; font-weight: 700; color: #ffffff; }
+.pace-label { font-size: 15px; font-weight: 700; color: #ffffff; }
 
 .pace-value {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--amber);
 }
 
-.pace-value small { font-size: 12px; font-weight: 400; color: #a8bbcb; margin-left: 2px; }
+.pace-value small { font-size: 14px; font-weight: 400; color: #a8bbcb; margin-left: 2px; }
 
 .category h3 {
-  font-size: 15px;
+  font-size: 17px;
   color: var(--muted);
   margin: 14px 0 6px;
 }
@@ -131,15 +132,15 @@ button.primary:hover { background: var(--navy-deep); }
   justify-content: space-between;
   padding: 7px 4px;
   border-bottom: 1px solid var(--line);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .wname { color: var(--text); }
 
 .btn-group { display: flex; gap: 6px; }
-.btn-group button { font-size: 12px; padding: 4px 10px; }
+.btn-group button { font-size: 14px; padding: 6px 14px; }
 
-.hint { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.hint { font-size: 15px; color: var(--muted); margin-bottom: 8px; }
 
 .video-embed {
   width: 100%;
@@ -154,13 +155,13 @@ button.primary:hover { background: var(--navy-deep); }
   border-radius: 12px;
 }
 
-.howto ol { padding-left: 22px; font-size: 14px; }
+.howto ol { padding-left: 22px; font-size: 16px; }
 
 .howto code {
   background: #eef3f7;
   padding: 1px 6px;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .legend {
@@ -171,8 +172,8 @@ button.primary:hover { background: var(--navy-deep); }
 }
 
 .legend-item {
-  font-size: 12px;
-  padding: 2px 10px;
+  font-size: 14px;
+  padding: 3px 12px;
   border-radius: 20px;
 }
 
@@ -184,8 +185,8 @@ button.primary:hover { background: var(--navy-deep); }
 #calendar {
   border-collapse: collapse;
   width: 100%;
-  min-width: 640px;
-  font-size: 13px;
+  min-width: 680px;
+  font-size: 14px;
 }
 
 #calendar th {
@@ -205,7 +206,7 @@ button.primary:hover { background: var(--navy-deep); }
 }
 
 .cal-type { display: block; font-weight: 700; white-space: nowrap; }
-.cal-label { display: block; font-size: 12px; font-weight: 500; opacity: 0.9; white-space: nowrap; }
+.cal-label { display: block; font-size: 13px; font-weight: 500; opacity: 0.9; white-space: nowrap; }
 
 .cal-total {
   background: #eef1f4;
@@ -227,7 +228,7 @@ footer {
   margin-top: 28px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
 }
 
