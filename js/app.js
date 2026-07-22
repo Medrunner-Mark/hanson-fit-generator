@@ -33,10 +33,10 @@ function renderPaceSummary() {
     ["長跑", fmtPace(t.long), ""],
     ["節奏跑 (MP)", fmtPace(t.tempo), ""],
     ["強化跑", fmtPace(t.strength), ""],
-    ["速度跑", fmtPace(t.fiveK), `每圈${lapSec}s`],
+    ["速度跑", fmtPace(t.fiveK), `每圈<strong>${lapSec}</strong>s`],
   ];
   paceSummary.innerHTML = rows
-    .map(([k, v, sub]) => `<div class="pace-cell"><span class="pace-label">${k}</span><span class="pace-value">${v}<small>/km${sub ? `（${sub}）` : ""}</small></span></div>`)
+    .map(([k, v, sub]) => `<div class="pace-cell"><span class="pace-label">${k}</span><span class="pace-value">${v}<small>/km</small></span>${sub ? `<span class="pace-sub">${sub}</span>` : ""}</div>`)
     .join("");
 }
 

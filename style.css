@@ -118,6 +118,9 @@ button.primary:hover { background: var(--navy-deep); }
 
 .pace-value small { font-size: 14px; font-weight: 400; color: #a8bbcb; margin-left: 2px; }
 
+.pace-sub { display: block; font-size: 14px; color: #a8bbcb; margin-top: 2px; }
+.pace-sub strong { color: #ffffff; font-weight: 700; }
+
 .category h3 {
   font-size: 17px;
   color: var(--muted);
