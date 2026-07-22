@@ -10,14 +10,14 @@
 <main class="card">
   <header>
     <h1>漢森進階版課表產生器</h1>
-    <p class="subtitle">選擇你的全馬目標時間，下載整套 18 週訓練的 .fit 課表檔案，直接匯入 Garmin 手錶。</p>
+    <p class="subtitle">選擇你的全馬目標時間，下載整套 18 週訓練的課表檔案，直接匯入 Garmin 手錶。</p>
   </header>
 
   <section class="control">
     <label for="goal-select">目標完賽時間</label>
     <select id="goal-select"></select>
-    <button id="zip-btn" class="primary">FIT 全部下載（手錶用）</button>
-    <button id="json-zip-btn" class="primary">JSON 全部下載（Connect 用）</button>
+    <button id="zip-btn" class="primary">FIT 全部下載（手錶接電腦用）</button>
+    <button id="json-zip-btn" class="primary">JSON 全部下載（Connect網頁版用）</button>
     <span id="status"></span>
   </section>
 
@@ -33,7 +33,7 @@
 
   <section>
     <h2>18週課表總覽</h2>
-    <p class="hint">列＝週次、欄＝星期一到日，比賽日在第18週的星期天。最右欄是當週跑量（每個課表的里程加總；速度／強化跑計暖身＋主課表＋收操）。</p>
+    <p class="hint">列＝週次、欄＝星期一到日，比賽日在第18週的星期天。最右欄是當週跑量（含速度/強化/節奏跑中的前後緩跑各2K）。</p>
     <div id="calendar-legend" class="legend"></div>
     <div class="calendar-wrap">
       <table id="calendar"></table>
@@ -43,21 +43,25 @@
   <section>
     <h2>課表清單</h2>
     <p class="hint">重複的課表只需要一份——在手錶或 Garmin Connect 裡同一份課表可以重複安排到不同週次。各課表對應週次請參考影片說明。</p>
+    <div class="video-embed">
+      <iframe src="https://www.youtube-nocookie.com/embed/GahoTo3an5Q" title="用漢森理論打造你的全馬課表｜Med日跑者" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+    </div>
+    <p class="hint">影片無法播放？<a href="https://youtu.be/GahoTo3an5Q" target="_blank" rel="noopener">直接在 YouTube 開啟</a></p>
     <div id="workout-list"></div>
   </section>
 
   <section class="howto">
-    <h2>怎麼匯入手錶（FIT 檔）</h2>
+    <h2>怎麼由Garmin電腦版匯入手錶（FIT 檔）</h2>
     <ol>
-      <li>用 USB 線把 Garmin 手錶接上電腦（手錶會顯示為隨身碟）。</li>
+      <li>用Garmin充電線把 Garmin 手錶接上電腦。</li>
       <li>把下載的 .fit 檔案全部複製到手錶的 <code>GARMIN/Workouts</code> 資料夾。</li>
-      <li>退出隨身碟、拔線，手錶上到「訓練 → 訓練課表」就能看到匯入的課表。</li>
+      <li>拔線，手錶上到「訓練 → 訓練課表」就能看到匯入的課表。</li>
     </ol>
-    <h2>不想接線？匯入 Garmin Connect 網頁版（JSON 檔）</h2>
+    <h2>不想接線？透過 Garmin Connect 網頁版匯入（JSON 檔）</h2>
     <ol>
       <li>安裝瀏覽器外掛 <a href="https://chromewebstore.google.com/detail/share-your-garmin-connect/kdpolhnlnkengkmfncjdbfdehglepmff" target="_blank" rel="noopener">Share your Garmin Connect workout</a>（第三方開源外掛）。</li>
       <li>下載上方的 .json 課表檔。</li>
-      <li>登入 <a href="https://connect.garmin.com/app/workouts" target="_blank" rel="noopener">Garmin Connect 的訓練課表頁</a>，按外掛加上的「Import Workout」按鈕選擇 .json 檔匯入（目前一次匯入一個）。</li>
+      <li>登入 <a href="https://connect.garmin.com/app/workouts" target="_blank" rel="noopener">Garmin Connect 的訓練課表頁</a>，按外掛加上的「Import Workout」按鈕選擇 .json 檔匯入（目前一次只能匯入一個檔案）。</li>
       <li>匯入後課表就在你的 Connect 帳號裡，可排入行事曆、由手機 App 同步到手錶，全程不用接線。</li>
     </ol>
     <p class="hint">所有計算與檔案產生都在你的瀏覽器裡完成，不會上傳任何資料。</p>
