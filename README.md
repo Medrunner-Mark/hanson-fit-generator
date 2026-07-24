@@ -2,7 +2,7 @@
 
 選擇你的全馬目標時間，一鍵產生整套《漢森馬拉松訓練法》進階版（Advanced）18週訓練的 Garmin `.fit` 課表檔案，用 USB 直接匯入手錶就能照表操課。
 
-由 [Med日跑者](https://www.youtube.com/@medrunnermark) 製作，搭配頻道的漢森課表教學影片使用。
+由 [Med日跑者](https://www.youtube.com/@Med-runner-Mark) 製作，搭配頻道的漢森課表教學影片使用。
 
 ## 使用方式
 

@@ -134,8 +134,10 @@ function renderCalendar() {
     const total = week.reduce((sum, day) => sum + day.d, 0);
     const cells = week.map(day => {
       const info = TYPE_INFO[day.t];
-      const sub = day.t === "rest" ? "" : `<span class="cal-label">${day.label}</span>`;
-      return `<td class="${info.cls}"><span class="cal-type">${info.name}</span>${sub}</td>`;
+      // 比賽日 label 形如「全馬 42.2K」，格內只留距離避免溢出
+      const text = day.t === "race" ? day.label.split(" ").pop() : day.label;
+      const sub = day.t === "rest" ? "" : `<span class="cal-label">${text}</span>`;
+      return `<td class="${info.cls}"><span class="cal-type">${info.short}</span>${sub}</td>`;
     }).join("");
     const totalTxt = Math.round(total * 10) / 10;
     return `<tr><th>W${wi + 1}</th>${cells}<td class="cal-total">${totalTxt}K</td></tr>`;

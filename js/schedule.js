@@ -7,14 +7,15 @@
 
 export const DAY_HEADERS = ["一", "二", "三", "四", "五", "六", "日"];
 
+// name = 圖例用全名；short = 行事曆格內用短名（讓整張表在手機上不必橫向捲動）
 export const TYPE_INFO = {
-  easy:     { name: "輕鬆有氧", cls: "t-easy" },
-  speed:    { name: "速度跑",   cls: "t-speed" },
-  tempo:    { name: "節奏跑",   cls: "t-tempo" },
-  strength: { name: "強化跑",   cls: "t-strength" },
-  long:     { name: "長跑",     cls: "t-long" },
-  rest:     { name: "休息日",   cls: "t-rest" },
-  race:     { name: "比賽日",   cls: "t-race" },
+  easy:     { name: "輕鬆有氧", short: "輕鬆", cls: "t-easy" },
+  speed:    { name: "速度跑",   short: "速度", cls: "t-speed" },
+  tempo:    { name: "節奏跑",   short: "節奏", cls: "t-tempo" },
+  strength: { name: "強化跑",   short: "強化", cls: "t-strength" },
+  long:     { name: "長跑",     short: "長跑", cls: "t-long" },
+  rest:     { name: "休息日",   short: "休息", cls: "t-rest" },
+  race:     { name: "比賽日",   short: "比賽", cls: "t-race" },
 };
 
 const e = d => ({ t: "easy", d, label: `${d}K` });
