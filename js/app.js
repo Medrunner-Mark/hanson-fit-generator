@@ -1,40 +1,38 @@
-import { PACE_TABLE, fmtPace } from "./paces.js";
-import { WORKOUTS } from "./workouts.js";
+import { fmtPace } from "./paces.js";
 import { buildWorkoutFit, workoutName } from "./fitgen.js";
 import { workoutJsonText } from "./jsongen.js";
-import { SCHEDULE, DAY_HEADERS, TYPE_INFO } from "./schedule.js";
+import { DAY_HEADERS, TYPE_INFO } from "./schedule.js";
+import { PLANS } from "./plans.js";
 
+const planSwitch = document.getElementById("plan-switch");
 const goalSelect = document.getElementById("goal-select");
 const paceSummary = document.getElementById("pace-summary");
 const workoutList = document.getElementById("workout-list");
 const zipBtn = document.getElementById("zip-btn");
 const statusEl = document.getElementById("status");
 
-// 預設選 4:00（中間偏常見的目標）
-PACE_TABLE.forEach((tier, i) => {
-  const opt = document.createElement("option");
-  opt.value = i;
-  opt.textContent = tier.goal;
-  goalSelect.appendChild(opt);
-});
-goalSelect.value = PACE_TABLE.findIndex(t => t.goal === "4:00");
+let currentPlanKey = "marathon";
+const currentPlan = () => PLANS[currentPlanKey];
+const currentTier = () => currentPlan().paceTable[Number(goalSelect.value)];
 
-function currentTier() {
-  return PACE_TABLE[Number(goalSelect.value)];
+function populateGoals() {
+  const plan = currentPlan();
+  goalSelect.innerHTML = "";
+  plan.paceTable.forEach((tier, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = tier.goal;
+    goalSelect.appendChild(opt);
+  });
+  goalSelect.value = plan.paceTable.findIndex(t => t.goal === plan.defaultGoal);
 }
 
 function renderPaceSummary() {
   const t = currentTier();
-  const lapSec = Math.round(t.fiveK * 0.4);
-  const rows = [
-    ["恢復跑", fmtPace(t.recovery), ""],
-    ["輕鬆有氧A", fmtPace(t.easyA), ""],
-    ["輕鬆有氧B", fmtPace(t.easyB), ""],
-    ["長跑", fmtPace(t.long), ""],
-    ["節奏跑 (MP)", fmtPace(t.tempo), ""],
-    ["強化跑", fmtPace(t.strength), ""],
-    ["速度跑", fmtPace(t.fiveK), `每圈<strong>${lapSec}</strong>s`],
-  ];
+  const rows = currentPlan().paceCards.map(card => {
+    const sub = card.lap ? `每圈<strong>${Math.round(t.fiveK * 0.4)}</strong>s` : "";
+    return [card.label, fmtPace(t[card.key]), sub];
+  });
   paceSummary.innerHTML = rows
     .map(([k, v, sub]) => `<div class="pace-cell"><span class="pace-label">${k}</span><span class="pace-value">${v}<small>/km</small></span>${sub ? `<span class="pace-sub">${sub}</span>` : ""}</div>`)
     .join("");
@@ -51,8 +49,9 @@ function downloadBytes(bytes, filename) {
 
 function renderWorkoutList() {
   const t = currentTier();
+  const plan = currentPlan();
   const byCategory = new Map();
-  for (const w of WORKOUTS) {
+  for (const w of plan.workouts) {
     if (!byCategory.has(w.category)) byCategory.set(w.category, []);
     byCategory.get(w.category).push(w);
   }
@@ -65,7 +64,7 @@ function renderWorkoutList() {
     const ul = document.createElement("ul");
     for (const w of items) {
       const li = document.createElement("li");
-      const name = workoutName(w, t);
+      const name = workoutName(w, t, plan);
       li.innerHTML = `<span class="wname">${name}</span>`;
       const btns = document.createElement("span");
       btns.className = "btn-group";
@@ -73,13 +72,13 @@ function renderWorkoutList() {
       fitBtn.textContent = "FIT";
       fitBtn.title = "下載 .fit（USB 匯入手錶）";
       fitBtn.addEventListener("click", () => {
-        downloadBytes(buildWorkoutFit(w, t), `${name}.fit`);
+        downloadBytes(buildWorkoutFit(w, t, plan), `${name}.fit`);
       });
       const jsonBtn = document.createElement("button");
       jsonBtn.textContent = "JSON";
       jsonBtn.title = "下載 .json（外掛匯入 Garmin Connect 網頁版）";
       jsonBtn.addEventListener("click", () => {
-        const blob = new Blob([workoutJsonText(w, t)], { type: "application/json;charset=utf-8" });
+        const blob = new Blob([workoutJsonText(w, t, plan)], { type: "application/json;charset=utf-8" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         a.download = `${name}.json`;
@@ -98,21 +97,22 @@ function renderWorkoutList() {
 
 async function downloadZip(kind) {
   const t = currentTier();
+  const plan = currentPlan();
   statusEl.textContent = "打包中…";
   try {
     const zip = new JSZip();
-    for (const w of WORKOUTS) {
-      const name = workoutName(w, t);
+    for (const w of plan.workouts) {
+      const name = workoutName(w, t, plan);
       if (kind === "fit") {
-        zip.file(`${name}.fit`, buildWorkoutFit(w, t));
+        zip.file(`${name}.fit`, buildWorkoutFit(w, t, plan));
       } else {
-        zip.file(`${name}.json`, workoutJsonText(w, t));
+        zip.file(`${name}.json`, workoutJsonText(w, t, plan));
       }
     }
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `漢森進階sub${t.goal.replace(":", "")}_全套課表_${kind.toUpperCase()}.zip`;
+    a.download = `${plan.namePrefix}sub${t.goal.replace(":", "")}_全套課表_${kind.toUpperCase()}.zip`;
     a.click();
     URL.revokeObjectURL(a.href);
     statusEl.textContent = "";
@@ -120,9 +120,6 @@ async function downloadZip(kind) {
     statusEl.textContent = "打包失敗：" + err.message;
   }
 }
-
-zipBtn.addEventListener("click", () => downloadZip("fit"));
-document.getElementById("json-zip-btn").addEventListener("click", () => downloadZip("json"));
 
 function renderCalendar() {
   const legend = document.getElementById("calendar-legend");
@@ -132,7 +129,7 @@ function renderCalendar() {
 
   const table = document.getElementById("calendar");
   const head = `<tr><th>週次</th>${DAY_HEADERS.map(d => `<th>${d}</th>`).join("")}<th>週跑量</th></tr>`;
-  const rows = SCHEDULE.map((week, wi) => {
+  const rows = currentPlan().schedule.map((week, wi) => {
     const total = week.reduce((sum, day) => sum + day.d, 0);
     const cells = week.map(day => {
       const info = TYPE_INFO[day.t];
@@ -145,11 +142,29 @@ function renderCalendar() {
   table.innerHTML = head + rows;
 }
 
+function renderAll() {
+  renderPaceSummary();
+  renderWorkoutList();
+  renderCalendar();
+}
+
+planSwitch.querySelectorAll("button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.plan === currentPlanKey) return;
+    currentPlanKey = btn.dataset.plan;
+    planSwitch.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
+    populateGoals();
+    renderAll();
+  });
+});
+
 goalSelect.addEventListener("change", () => {
   renderPaceSummary();
   renderWorkoutList();
 });
 
-renderPaceSummary();
-renderWorkoutList();
-renderCalendar();
+zipBtn.addEventListener("click", () => downloadZip("fit"));
+document.getElementById("json-zip-btn").addEventListener("click", () => downloadZip("json"));
+
+populateGoals();
+renderAll();

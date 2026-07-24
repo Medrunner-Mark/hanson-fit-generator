@@ -40,6 +40,8 @@ export function stepNotes(step, tier) {
         const gap = tier.tempo - tier.strength;
         return `MP-${gap}s ${fmtPace(tier.strength)}/km`;
       }
+      if (step.paceKey === "hmp") return `半馬配速 ${fmtPace(tier.hmp)}/km`;
+      if (step.paceKey === "tenK") return `10K配速 ${fmtPace(tier.tenK)}/km`;
       if (step.paceKey === "long") return `長跑配速 ${fmtPace(tier.long)}/km`;
       if (step.paceKey === "speed") {
         const lapSec = Math.round(tier.fiveK * 0.4); // 400m一圈，以配速表400m配速計
@@ -59,12 +61,12 @@ function intensityOf(step) {
   }
 }
 
-// 顯示/檔名用名稱："漢森進階sub255_長跑26K"
-export function workoutName(workout, tier) {
-  return `漢森進階sub${goalCode(tier.goal)}_${workout.label}`;
+// 顯示/檔名用名稱："漢森進階sub255_長跑26K"／"漢森進階半馬sub145_節奏跑10K"
+export function workoutName(workout, tier, plan) {
+  return `${plan.namePrefix}sub${goalCode(tier.goal)}_${workout.label}`;
 }
 
-export function buildWorkoutFit(workout, tier) {
+export function buildWorkoutFit(workout, tier, plan) {
   const encoder = new Encoder();
 
   encoder.writeMesg({
@@ -78,7 +80,7 @@ export function buildWorkoutFit(workout, tier) {
 
   encoder.writeMesg({
     mesgNum: Profile.MesgNum.WORKOUT,
-    wktName: workoutName(workout, tier),
+    wktName: workoutName(workout, tier, plan),
     sport: "running",
     subSport: "generic",
     numValidSteps: workout.steps.length,

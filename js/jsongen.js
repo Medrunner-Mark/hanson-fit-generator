@@ -76,7 +76,7 @@ function execStep(step, tier, stepOrder, childStepId) {
   };
 }
 
-export function buildWorkoutJson(workout, tier) {
+export function buildWorkoutJson(workout, tier, plan) {
   let stepOrder = 0;
   const serialize = (nodes, childStepId) => nodes.map(node => {
     stepOrder += 1;
@@ -102,8 +102,8 @@ export function buildWorkoutJson(workout, tier) {
   const steps = serialize(toTree(workout.steps), null);
 
   return {
-    workoutName: workoutName(workout, tier),
-    description: `漢森進階版課表產生器（目標 ${tier.goal}）｜Med日跑者`,
+    workoutName: workoutName(workout, tier, plan),
+    description: `漢森進階${plan.label}課表產生器（目標 ${tier.goal}）｜Med日跑者`,
     sportType: SPORT,
     workoutSegments: [
       { segmentOrder: 1, sportType: SPORT, workoutSteps: steps },
@@ -111,6 +111,6 @@ export function buildWorkoutJson(workout, tier) {
   };
 }
 
-export function workoutJsonText(workout, tier) {
-  return JSON.stringify(buildWorkoutJson(workout, tier), null, 2);
+export function workoutJsonText(workout, tier, plan) {
+  return JSON.stringify(buildWorkoutJson(workout, tier, plan), null, 2);
 }
