@@ -3,6 +3,7 @@ import { buildWorkoutFit, workoutName } from "./fitgen.js";
 import { workoutJsonText } from "./jsongen.js";
 import { DAY_HEADERS, TYPE_INFO } from "./schedule.js";
 import { PLANS } from "./plans.js";
+import { buildPoster } from "./poster.js";
 
 const planSwitch = document.getElementById("plan-switch");
 const goalSelect = document.getElementById("goal-select");
@@ -165,6 +166,23 @@ goalSelect.addEventListener("change", () => {
 
 zipBtn.addEventListener("click", () => downloadZip("fit"));
 document.getElementById("json-zip-btn").addEventListener("click", () => downloadZip("json"));
+
+document.getElementById("poster-btn").addEventListener("click", () => {
+  const plan = currentPlan(), t = currentTier();
+  statusEl.textContent = "產生課表圖…";
+  try {
+    buildPoster(plan, t).toBlob(blob => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${plan.namePrefix}sub${t.goal.replace(":", "")}_18週課表.png`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      statusEl.textContent = "";
+    }, "image/png");
+  } catch (err) {
+    statusEl.textContent = "產生失敗：" + err.message;
+  }
+});
 
 populateGoals();
 renderAll();

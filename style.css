@@ -143,6 +143,8 @@ button.dl-btn span { margin-right: 6px; font-weight: 400; }
 
 button.dl-btn:hover { background: #3a7bc0; }
 
+.poster-btn { margin-top: 14px; }
+
 #status { font-size: 15px; color: var(--muted); }
 
 .pace-grid {
