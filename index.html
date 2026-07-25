@@ -13,10 +13,17 @@
     <p class="subtitle">選擇距離與目標時間，下載整套 18 週漢森進階課表，匯入 Garmin 手錶或 Connect 網頁版。</p>
   </header>
 
-  <div class="plan-switch" id="plan-switch">
-    <button data-plan="marathon" class="active">全程馬拉松</button>
-    <button data-plan="half">半程馬拉松</button>
+  <div class="switch-row">
+    <div class="plan-switch" id="distance-switch">
+      <button data-distance="marathon" class="active">全程馬拉松</button>
+      <button data-distance="half">半程馬拉松</button>
+    </div>
+    <div class="plan-switch" id="level-switch">
+      <button data-level="advanced" class="active">進階</button>
+      <button data-level="beginner">初階</button>
+    </div>
   </div>
+  <p class="hint" id="level-hint"></p>
 
   <section class="control">
     <label for="goal-select">目標完賽時間</label>

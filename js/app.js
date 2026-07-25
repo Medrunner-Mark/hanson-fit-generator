@@ -6,15 +6,19 @@ import { PLANS } from "./plans.js";
 import { buildPoster } from "./poster.js";
 import { downloadPdf } from "./pdfgen.js";
 
-const planSwitch = document.getElementById("plan-switch");
+const distanceSwitch = document.getElementById("distance-switch");
+const levelSwitch = document.getElementById("level-switch");
+const levelHint = document.getElementById("level-hint");
 const goalSelect = document.getElementById("goal-select");
 const paceSummary = document.getElementById("pace-summary");
 const workoutList = document.getElementById("workout-list");
 const zipBtn = document.getElementById("zip-btn");
 const statusEl = document.getElementById("status");
 
-let currentPlanKey = "marathon";
-const currentPlan = () => PLANS[currentPlanKey];
+let currentDistance = "marathon";
+let currentLevel = "advanced";
+const currentPlanKey = () => `${currentDistance}-${currentLevel}`;
+const currentPlan = () => PLANS[currentPlanKey()];
 const currentTier = () => currentPlan().paceTable[Number(goalSelect.value)];
 
 // 下載事件統計（送到 GoatCounter，後台可分類查看；失敗不影響下載）
@@ -22,7 +26,7 @@ function trackDownload(kind) {
   try {
     if (window.goatcounter && window.goatcounter.count) {
       window.goatcounter.count({
-        path: `download/${kind}/${currentPlanKey}`,
+        path: `download/${kind}/${currentPlanKey()}`,
         title: `下載 ${kind} (${currentPlan().label})`,
         event: true,
       });
@@ -46,7 +50,7 @@ function renderPaceSummary() {
   const t = currentTier();
   const rows = currentPlan().paceCards.map(card => {
     const sub = card.lap ? `每圈<strong>${Math.round(t.fiveK * 0.4)}</strong>s` : "";
-    return [card.label, fmtPace(t[card.key]), sub];
+    return [card.label, fmtPace(t[card.key] + (card.offsetSec || 0)), sub];
   });
   paceSummary.innerHTML = rows
     .map(([k, v, sub]) => `<div class="pace-cell"><span class="pace-label">${k}</span><span class="pace-value">${v}<small>/km</small></span>${sub ? `<span class="pace-sub">${sub}</span>` : ""}</div>`)
@@ -168,13 +172,34 @@ function renderAll() {
   renderCalendar();
 }
 
-planSwitch.querySelectorAll("button").forEach(btn => {
+const LEVEL_HINTS = {
+  advanced: "進階版：第1週就有速度跑，起始跑量較高（約60K/週起），適合已有規律訓練基礎的跑者。",
+  beginner: "初階版：前5-6週為基礎期（全是輕鬆跑），之後才加入速度跑與節奏跑，週三固定休息或交叉訓練。",
+};
+
+function switchPlan() {
+  levelHint.textContent = LEVEL_HINTS[currentLevel];
+  // 初階版目前沒有 Excel 互動模板，隱藏該按鈕
+  document.getElementById("xlsx-btn").style.display = currentPlan().xlsxFile ? "" : "none";
+  populateGoals();
+  renderAll();
+}
+
+distanceSwitch.querySelectorAll("button").forEach(btn => {
   btn.addEventListener("click", () => {
-    if (btn.dataset.plan === currentPlanKey) return;
-    currentPlanKey = btn.dataset.plan;
-    planSwitch.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
-    populateGoals();
-    renderAll();
+    if (btn.dataset.distance === currentDistance) return;
+    currentDistance = btn.dataset.distance;
+    distanceSwitch.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
+    switchPlan();
+  });
+});
+
+levelSwitch.querySelectorAll("button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.level === currentLevel) return;
+    currentLevel = btn.dataset.level;
+    levelSwitch.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
+    switchPlan();
   });
 });
 
@@ -238,5 +263,4 @@ document.getElementById("poster-btn").addEventListener("click", () => {
   } catch (e) { /* 靜默失敗 */ }
 })();
 
-populateGoals();
-renderAll();
+switchPlan();

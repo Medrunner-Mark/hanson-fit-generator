@@ -1,0 +1,24 @@
+// 初階18週課表行事曆：由腳本從「Hanson_HalfMarathon_Beginner.pdf」自動產出。
+// 每週7天（週一~週日），t=課表類型，d=當日里程(km)，label=課表內容簡述。
+// 里程計法：暖身+主課表+收操（不含組間恢復跑），與其他課表一致。
+
+export const BEGINNER_HALF_SCHEDULE = [
+  /* W1  */ [{ t: "rest", d: 0, label: "休息" }, { t: "rest", d: 0, label: "休息" }, { t: "rest", d: 0, label: "休息" }, { t: "easy", d: 5, label: "5K" }, { t: "rest", d: 0, label: "休息" }, { t: "easy", d: 5, label: "5K" }, { t: "easy", d: 6, label: "6K" }],
+  /* W2  */ [{ t: "rest", d: 0, label: "休息" }, { t: "easy", d: 3, label: "3K" }, { t: "rest", d: 0, label: "休息" }, { t: "easy", d: 5, label: "5K" }, { t: "easy", d: 5, label: "5K" }, { t: "easy", d: 5, label: "5K" }, { t: "easy", d: 6, label: "6K" }],
+  /* W3  */ [{ t: "rest", d: 0, label: "休息" }, { t: "easy", d: 6, label: "6K" }, { t: "rest", d: 0, label: "休息" }, { t: "easy", d: 6, label: "6K" }, { t: "easy", d: 6, label: "6K" }, { t: "easy", d: 6, label: "6K" }, { t: "easy", d: 8, label: "8K" }],
+  /* W4  */ [{ t: "rest", d: 0, label: "休息" }, { t: "easy", d: 8, label: "8K" }, { t: "rest", d: 0, label: "休息" }, { t: "easy", d: 5, label: "5K" }, { t: "easy", d: 5, label: "5K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 10, label: "10K" }],
+  /* W5  */ [{ t: "rest", d: 0, label: "休息" }, { t: "easy", d: 8, label: "8K" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 9, label: "5K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 6, label: "6K" }, { t: "long", d: 13, label: "13K" }],
+  /* W6  */ [{ t: "easy", d: 6, label: "6K" }, { t: "speed", d: 8.8, label: "12x400" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 9, label: "5K" }, { t: "easy", d: 6, label: "6K" }, { t: "easy", d: 8, label: "8K" }, { t: "long", d: 14, label: "14K" }],
+  /* W7  */ [{ t: "easy", d: 6, label: "6K" }, { t: "speed", d: 8.8, label: "8x600" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 9, label: "5K" }, { t: "easy", d: 6, label: "6K" }, { t: "easy", d: 10, label: "10K" }, { t: "long", d: 16, label: "16K" }],
+  /* W8  */ [{ t: "easy", d: 10, label: "10K" }, { t: "speed", d: 8.8, label: "6x800" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 10, label: "6K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 10, label: "10K" }, { t: "long", d: 16, label: "16K" }],
+  /* W9  */ [{ t: "easy", d: 8, label: "8K" }, { t: "speed", d: 9, label: "5x1000" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 10, label: "6K" }, { t: "easy", d: 10, label: "10K" }, { t: "easy", d: 8, label: "8K" }, { t: "long", d: 16, label: "16K" }],
+  /* W10 */ [{ t: "easy", d: 10, label: "10K" }, { t: "speed", d: 8.8, label: "4x1200" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 10, label: "6K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 8, label: "8K" }, { t: "long", d: 19, label: "19K" }],
+  /* W11 */ [{ t: "easy", d: 8, label: "8K" }, { t: "strength", d: 16, label: "6x2000" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 12, label: "8K" }, { t: "easy", d: 10, label: "10K" }, { t: "easy", d: 8, label: "8K" }, { t: "long", d: 16, label: "16K" }],
+  /* W12 */ [{ t: "easy", d: 8, label: "8K" }, { t: "strength", d: 12, label: "4x2000" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 12, label: "8K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 10, label: "10K" }, { t: "long", d: 19, label: "19K" }],
+  /* W13 */ [{ t: "easy", d: 10, label: "10K" }, { t: "strength", d: 13, label: "3x3000" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 12, label: "8K" }, { t: "easy", d: 10, label: "10K" }, { t: "easy", d: 8, label: "8K" }, { t: "long", d: 16, label: "16K" }],
+  /* W14 */ [{ t: "easy", d: 8, label: "8K" }, { t: "strength", d: 14, label: "2x5000" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 14, label: "10K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 10, label: "10K" }, { t: "long", d: 19, label: "19K" }],
+  /* W15 */ [{ t: "easy", d: 11, label: "11K" }, { t: "strength", d: 13, label: "3x3000" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 14, label: "10K" }, { t: "easy", d: 10, label: "10K" }, { t: "easy", d: 8, label: "8K" }, { t: "long", d: 16, label: "16K" }],
+  /* W16 */ [{ t: "easy", d: 8, label: "8K" }, { t: "strength", d: 12, label: "4x2000" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 14, label: "10K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 10, label: "10K" }, { t: "long", d: 19, label: "19K" }],
+  /* W17 */ [{ t: "easy", d: 8, label: "8K" }, { t: "strength", d: 16, label: "6x2000" }, { t: "rest", d: 0, label: "休息" }, { t: "tempo", d: 12, label: "8K" }, { t: "easy", d: 10, label: "10K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 13, label: "13K" }],
+  /* W18 */ [{ t: "easy", d: 8, label: "8K" }, { t: "easy", d: 8, label: "8K" }, { t: "rest", d: 0, label: "休息" }, { t: "easy", d: 10, label: "10K" }, { t: "easy", d: 8, label: "8K" }, { t: "easy", d: 5, label: "5K" }, { t: "race", d: 21.1, label: "半馬 21.1K" }],
+];

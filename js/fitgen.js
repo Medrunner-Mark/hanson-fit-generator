@@ -16,8 +16,8 @@ export function paceRange(step, tier) {
     case "main": {
       if (step.paceKey === "speed") return [tier.fiveK + 5, tier.fiveK - 5]; // 400m配速(=5K配速)±5s
       const center = step.mpOffset !== undefined
-        ? tier.tempo + step.mpOffset      // 漸速跑：MP+偏移秒數
-        : tier[step.paceKey];             // tempo / strength / long
+        ? tier.tempo + step.mpOffset                        // 漸速跑：MP+偏移秒數
+        : tier[step.paceKey] + (step.offsetSec || 0);       // tempo/strength/long/hmp(±偏移)
       return [center + 5, center - 5];
     }
     default:
@@ -40,7 +40,13 @@ export function stepNotes(step, tier) {
         const gap = tier.tempo - tier.strength;
         return `MP-${gap}s ${fmtPace(tier.strength)}/km`;
       }
-      if (step.paceKey === "hmp") return `半馬配速 ${fmtPace(tier.hmp)}/km`;
+      if (step.paceKey === "hmp") {
+        if (step.offsetSec) {
+          const s = Math.abs(step.offsetSec);
+          return `HMP${step.offsetSec < 0 ? "-" : "+"}${s}s ${fmtPace(tier.hmp + step.offsetSec)}/km`;
+        }
+        return `半馬配速 ${fmtPace(tier.hmp)}/km`;
+      }
       if (step.paceKey === "tenK") return `10K配速 ${fmtPace(tier.tenK)}/km`;
       if (step.paceKey === "long") return `長跑配速 ${fmtPace(tier.long)}/km`;
       if (step.paceKey === "speed") {

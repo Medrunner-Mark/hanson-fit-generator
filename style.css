@@ -48,6 +48,13 @@ h2 {
   border-top: 1px solid var(--line);
 }
 
+.switch-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .plan-switch {
   display: inline-flex;
   gap: 0;
