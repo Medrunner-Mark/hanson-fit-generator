@@ -4,6 +4,7 @@ import { workoutJsonText } from "./jsongen.js";
 import { DAY_HEADERS, TYPE_INFO } from "./schedule.js";
 import { PLANS } from "./plans.js";
 import { buildPoster } from "./poster.js";
+import { downloadPdf } from "./pdfgen.js";
 
 const planSwitch = document.getElementById("plan-switch");
 const goalSelect = document.getElementById("goal-select");
@@ -15,6 +16,19 @@ const statusEl = document.getElementById("status");
 let currentPlanKey = "marathon";
 const currentPlan = () => PLANS[currentPlanKey];
 const currentTier = () => currentPlan().paceTable[Number(goalSelect.value)];
+
+// 下載事件統計（送到 GoatCounter，後台可分類查看；失敗不影響下載）
+function trackDownload(kind) {
+  try {
+    if (window.goatcounter && window.goatcounter.count) {
+      window.goatcounter.count({
+        path: `download/${kind}/${currentPlanKey}`,
+        title: `下載 ${kind} (${currentPlan().label})`,
+        event: true,
+      });
+    }
+  } catch (e) { /* 統計失敗不影響功能 */ }
+}
 
 function populateGoals() {
   const plan = currentPlan();
@@ -73,12 +87,14 @@ function renderWorkoutList() {
       fitBtn.textContent = "FIT";
       fitBtn.title = "下載 .fit（USB 匯入手錶）";
       fitBtn.addEventListener("click", () => {
+        trackDownload("fit-single");
         downloadBytes(buildWorkoutFit(w, t, plan), `${name}.fit`);
       });
       const jsonBtn = document.createElement("button");
       jsonBtn.textContent = "JSON";
       jsonBtn.title = "下載 .json（外掛匯入 Garmin Connect 網頁版）";
       jsonBtn.addEventListener("click", () => {
+        trackDownload("json-single");
         const blob = new Blob([workoutJsonText(w, t, plan)], { type: "application/json;charset=utf-8" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -99,6 +115,7 @@ function renderWorkoutList() {
 async function downloadZip(kind) {
   const t = currentTier();
   const plan = currentPlan();
+  trackDownload(`${kind}-zip`);
   statusEl.textContent = "打包中…";
   try {
     const zip = new JSZip();
@@ -169,8 +186,30 @@ goalSelect.addEventListener("change", () => {
 zipBtn.addEventListener("click", () => downloadZip("fit"));
 document.getElementById("json-zip-btn").addEventListener("click", () => downloadZip("json"));
 
+document.getElementById("pdf-btn").addEventListener("click", () => {
+  const plan = currentPlan(), t = currentTier();
+  trackDownload("pdf");
+  statusEl.textContent = "產生 PDF…";
+  try {
+    downloadPdf(plan, t);
+    statusEl.textContent = "";
+  } catch (err) {
+    statusEl.textContent = "PDF 產生失敗：" + err.message;
+  }
+});
+
+document.getElementById("xlsx-btn").addEventListener("click", () => {
+  const plan = currentPlan();
+  trackDownload("xlsx");
+  const a = document.createElement("a");
+  a.href = plan.xlsxFile;
+  a.download = plan.xlsxName;
+  a.click();
+});
+
 document.getElementById("poster-btn").addEventListener("click", () => {
   const plan = currentPlan(), t = currentTier();
+  trackDownload("poster");
   statusEl.textContent = "產生課表圖…";
   try {
     buildPoster(plan, t).toBlob(blob => {
@@ -185,6 +224,19 @@ document.getElementById("poster-btn").addEventListener("click", () => {
     statusEl.textContent = "產生失敗：" + err.message;
   }
 });
+
+// 頁尾外顯造訪人次（GoatCounter 公開計數 JSON；抓不到就靜默不顯示）
+(async () => {
+  const el = document.getElementById("visitor-count");
+  if (!el) return;
+  try {
+    const r = await fetch("https://medrunner.goatcounter.com/counter/TOTAL.json");
+    if (!r.ok) return;
+    const d = await r.json();
+    const n = Number(String(d.count).replace(/[^\d]/g, ""));
+    if (n > 0) el.textContent = `已有 ${n.toLocaleString("zh-TW")} 人次造訪本工具，感謝你的支持 🙏`;
+  } catch (e) { /* 靜默失敗 */ }
+})();
 
 populateGoals();
 renderAll();

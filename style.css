@@ -351,6 +351,8 @@ footer {
 
 footer a { color: var(--navy); }
 
+.visitor-count { margin-top: 8px; font-weight: 600; color: var(--navy); }
+
 @media (max-width: 480px) {
   .card { padding: 22px 16px; }
   .control { align-items: stretch; flex-direction: column; }

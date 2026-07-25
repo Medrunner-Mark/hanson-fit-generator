@@ -13,6 +13,8 @@ export const PLANS = {
     key: "marathon",
     label: "全馬",
     namePrefix: "漢森進階",       // 檔名/課表名前綴 → 漢森進階sub400_...
+    xlsxFile: "templates/hanson-full-marathon-template.xlsx",
+    xlsxName: "漢森進階全馬課表模板_互動版.xlsx",
     defaultGoal: "4:00",
     paceTable: PACE_TABLE,
     workouts: WORKOUTS,
@@ -31,6 +33,8 @@ export const PLANS = {
     key: "half",
     label: "半馬",
     namePrefix: "漢森進階半馬",
+    xlsxFile: "templates/hanson-half-marathon-template.xlsx",
+    xlsxName: "漢森進階半馬課表模板_互動版.xlsx",
     defaultGoal: "1:45",
     paceTable: HALF_PACE_TABLE,
     workouts: HALF_WORKOUTS,
