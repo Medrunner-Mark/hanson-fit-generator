@@ -1,4 +1,5 @@
-// 漢森初階半馬課表模板（依 Hanson_HalfMarathon_Beginner.pdf）。強化跑=HMP-6s（原書寫 HMP-10s，單位為每英里，換算每公里約6秒）。
+// 漢森初階半馬課表模板（依 Hanson_HalfMarathon_Beginner.pdf）。
+// 強化跑：原書寫 HMP-10s（單位為每英里），本工具統一採配速表的 10K 配速欄，與進階半馬一致。
 // 結構固定，配速隨使用者目標時間查表變動（與進階版共用同一張配速表）。
 
 export const BEGINNER_HALF_WORKOUTS = [
@@ -42,28 +43,28 @@ export const BEGINNER_HALF_WORKOUTS = [
   // ─── 強化跑 ───
   { id: "str_6x2000", category: "強化跑", label: "強化跑6x2000", steps: [
     { kind: "wu", dist: 2000 },
-    { kind: "main", dist: 2000, paceKey: "hmp", offsetSec: -6 },
+    { kind: "main", dist: 2000, paceKey: "tenK" },
     { kind: "jog", dist: 400 },
     { kind: "repeat", backTo: 1, times: 6 },
     { kind: "cd", dist: 2000 },
   ]},
   { id: "str_4x2000", category: "強化跑", label: "強化跑4x2000", steps: [
     { kind: "wu", dist: 2000 },
-    { kind: "main", dist: 2000, paceKey: "hmp", offsetSec: -6 },
+    { kind: "main", dist: 2000, paceKey: "tenK" },
     { kind: "jog", dist: 800 },
     { kind: "repeat", backTo: 1, times: 4 },
     { kind: "cd", dist: 2000 },
   ]},
   { id: "str_3x3000", category: "強化跑", label: "強化跑3x3000", steps: [
     { kind: "wu", dist: 2000 },
-    { kind: "main", dist: 3000, paceKey: "hmp", offsetSec: -6 },
+    { kind: "main", dist: 3000, paceKey: "tenK" },
     { kind: "jog", dist: 800 },
     { kind: "repeat", backTo: 1, times: 3 },
     { kind: "cd", dist: 2000 },
   ]},
   { id: "str_2x5000", category: "強化跑", label: "強化跑2x5000", steps: [
     { kind: "wu", dist: 2000 },
-    { kind: "main", dist: 5000, paceKey: "hmp", offsetSec: -6 },
+    { kind: "main", dist: 5000, paceKey: "tenK" },
     { kind: "jog", dist: 2000 },
     { kind: "repeat", backTo: 1, times: 2 },
     { kind: "cd", dist: 2000 },

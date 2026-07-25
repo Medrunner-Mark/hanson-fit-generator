@@ -174,7 +174,7 @@ function renderAll() {
 
 const LEVEL_HINTS = {
   advanced: "進階版：第1週就有速度跑，起始跑量較高（約60K/週起），適合已有規律訓練基礎的跑者。",
-  beginner: "初階版：前5-6週為基礎期（全是輕鬆跑），之後才加入速度跑與節奏跑，週三固定休息或交叉訓練。",
+  beginner: "初階版：前5-6週為基礎期（全是輕鬆跑），之後才加入速度跑與節奏跑。",
 };
 
 function switchPlan() {

@@ -87,15 +87,7 @@ export const PLANS = {
     paceTable: HALF_PACE_TABLE,
     workouts: BEGINNER_HALF_WORKOUTS,
     schedule: BEGINNER_HALF_SCHEDULE,
-    // 初階半馬強化跑為 HMP-6s，配速卡標示同進階（節奏跑 HMP），強化跑欄改標 HMP-6s
-    paceCards: [
-      { label: "恢復跑", key: "recovery" },
-      { label: "輕鬆有氧A", key: "easyA" },
-      { label: "輕鬆有氧B", key: "easyB" },
-      { label: "長跑", key: "long" },
-      { label: "節奏跑 (HMP)", key: "hmp" },
-      { label: "強化跑 (HMP-6s)", key: "hmp", offsetSec: -6 },
-      { label: "速度跑", key: "fiveK", lap: true },
-    ],
+    // 強化跑統一使用 10K 配速欄，與進階半馬一致
+    paceCards: HALF_PACE_CARDS,
   },
 };
