@@ -159,7 +159,28 @@ button.dl-btn span { margin-right: 6px; font-weight: 400; }
 
 button.dl-btn:hover { background: #3a7bc0; }
 
-.poster-btn { margin-top: 14px; }
+/* 課表檢視類下載（課表圖／PDF／Excel）：深綠色，與「匯入手錶用」的藍色按鈕區分 */
+button.dl-btn-green {
+  background: #2f6b4f;
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  padding: 10px 18px;
+}
+
+button.dl-btn-green span { margin-right: 6px; font-weight: 400; }
+
+button.dl-btn-green:hover { background: #25543e; }
+
+.view-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* 換行時讓同一列的按鈕平均撐滿寬度，排列較整齊 */
+.view-downloads button { flex: 1 1 auto; }
 
 #status { font-size: 15px; color: var(--muted); }
 
