@@ -25,16 +25,21 @@ const INK = "#16304a", MUTED = "#6b7c8c", LINE = "#d8e0e8";
 
 // 混合中英文的斷行：英數字與 3:45 這類 token 不切開，中文可逐字斷。
 // 單一 token 本身就超過行寬時逐字硬斷——沒有這道保險，長英文字會靜默溢出格子。
-function wrapText(ctx, text, maxW) {
+//
+// width 可以是數字，也可以是 (行號) => 寬度 的函式：里程數字貼在格子右下角，
+// 落在那一帶的行必須讓開，否則滿版的格子會疊字。
+function wrapText(ctx, text, width) {
+  const wOf = typeof width === "function" ? width : () => width;
   const tokens = text.match(/[A-Za-z0-9:.@×–\-]+|\s+|[^\s]/g) || [];
   const lines = [];
   let line = "";
   for (const tk of tokens) {
+    const maxW = wOf(lines.length);
     if (ctx.measureText(tk).width > maxW) {
       if (line.trim()) lines.push(line.replace(/\s+$/, ""));
       let chunk = "";
       for (const ch of tk) {
-        if (chunk && ctx.measureText(chunk + ch).width > maxW) { lines.push(chunk); chunk = ch; }
+        if (chunk && ctx.measureText(chunk + ch).width > wOf(lines.length)) { lines.push(chunk); chunk = ch; }
         else chunk += ch;
       }
       line = chunk;
@@ -50,6 +55,25 @@ function wrapText(ctx, text, maxW) {
   }
   if (line.trim()) lines.push(line);
   return lines;
+}
+
+// 里程標在格子右下角。回傳「第幾行該用多寬」的函式，讓底部那幾行避開它。
+// 排版與量測必須共用這個函式，否則 pickBodySize 會低估行數。
+function kmText(day) {
+  return day.d > 0 ? `${day.d}K` : "";
+}
+
+function lineWidth(ctx, day, m, maxW, rowH) {
+  const km = kmText(day);
+  if (!km) return maxW;
+  const kmSize = Math.round(m.body * 0.92);
+  const prev = ctx.font;
+  ctx.font = font(kmSize, 700);
+  const kmW = ctx.measureText(km).width;
+  ctx.font = prev;
+  // 里程基線在 rowH-10；基線超過這個高度的內文行會撞到它
+  const bandTop = rowH - 10 - kmSize;
+  return li => (TOP_PAD + m.capOffset + m.gap + li * m.lineH > bandTop ? maxW - kmW - 8 : maxW);
 }
 
 // 格內內容一律靠上對齊，剩下的空白全部落在下半部供手寫筆記。
@@ -92,13 +116,17 @@ function pickBodySize(plan, tier) {
   const { dayW, rowH } = pageGeom(0);            // 以最窄的一頁為準，兩頁才一致
   const maxW = dayW - 20;
   const ctx = document.createElement("canvas").getContext("2d");
-  const texts = plan.schedule.flat().map(day => describeDay(plan, day, tier));
+  const days = plan.schedule.flat();
   for (let body = BODY_MAX; body > BODY_MIN; body--) {
     const m = metrics(body);
     const maxLines = maxLinesFor(m, rowH);
     if (maxLines < 1) continue;
-    ctx.font = font(body, 400);
-    if (texts.every(t => wrapText(ctx, t, maxW).length <= maxLines)) return body;
+    const fits = days.every(day => {
+      const w = lineWidth(ctx, day, m, maxW, rowH);   // 會暫時改動 ctx.font
+      ctx.font = font(body, 400);
+      return wrapText(ctx, describeDay(plan, day, tier), w).length <= maxLines;
+    });
+    if (fits) return body;
   }
   return BODY_MIN;
 }
@@ -204,13 +232,15 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
       ctx.textAlign = "left";
       const tx = x + 12, maxW = dayW - 20;
 
+      const widthFor = lineWidth(ctx, day, m, maxW, rowH);
       ctx.font = font(m.body, 400);
-      const all = wrapText(ctx, describeDay(plan, day, tier), maxW);
+      const all = wrapText(ctx, describeDay(plan, day, tier), widthFor);
       const lines = all.slice(0, maxLines);
       if (all.length > lines.length && lines.length) {
         // 截斷要看得出來（自動字級正常運作時不該發生）
+        const lastW = typeof widthFor === "function" ? widthFor(lines.length - 1) : widthFor;
         let t = lines[lines.length - 1];
-        while (t && ctx.measureText(t + "…").width > maxW) t = t.slice(0, -1);
+        while (t && ctx.measureText(t + "…").width > lastW) t = t.slice(0, -1);
         lines[lines.length - 1] = t + "…";
       }
       // 靠上對齊：空白全部集中到格子下半部，留給使用者手寫筆記
@@ -219,45 +249,29 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
       ctx.fillStyle = c.fg;
       ctx.font = font(m.typeSize, 700);
       ctx.fillText(TYPE_INFO[day.t].short, tx, startY);
-      const typeW = ctx.measureText(TYPE_INFO[day.t].short).width;
 
-      // 里程與日期都放在標題這一列的右側，不佔內文行數預算。
-      // 不放右下角是因為滿版（5 行）的格子會一路寫到底，右下角根本沒有空位——
-      // 而慢速目標時間的使用者正好整份課表都是滿版格子。
-      const km = day.d > 0 ? String(day.d) : "";
-      const ds = dates ? shortDate(dates[start + i][di]) : "";
-      if (km || ds) {
-        // 與類型名至少保留 8px 間距。「比賽 11/29 42.2」這種最長的組合在固定字級下
-        // 會直接撞上類型名，所以量測後不夠寬就整組等比縮小。
-        const avail = dayW - 22 - typeW - 8;
-        let kf = Math.round(m.body * 0.92), df = Math.round(m.body * 0.76);
-        const groupW = () => {
-          let w = 0;
-          if (km) { ctx.font = font(kf, 700); w += ctx.measureText(km).width; }
-          if (ds) { ctx.font = font(df, 500); w += ctx.measureText(ds).width; }
-          return w + (km && ds ? 6 : 0);
-        };
-        while (groupW() > avail && kf > 10) { kf--; if (df > 9) df--; }
-
+      // 日期：標題列右上角。用該格的前景色降透明度，比賽日那種深底才不會看不見
+      // （固定用灰色的話，白字深底的比賽格會整個消失）。
+      if (dates) {
         ctx.textAlign = "right";
-        let rx = x + dayW - 10;
-        if (km) {
-          ctx.fillStyle = c.fg;
-          ctx.font = font(kf, 700);
-          ctx.fillText(km, rx, startY);
-          rx -= ctx.measureText(km).width + 6;
-        }
-        if (ds) {
-          ctx.fillStyle = MUTED;
-          ctx.font = font(df, 500);
-          ctx.fillText(ds, rx, startY);
-        }
+        ctx.globalAlpha = 0.72;
+        ctx.font = font(Math.round(m.body * 0.78), 500);
+        ctx.fillText(shortDate(dates[start + i][di]), x + dayW - 10, startY);
+        ctx.globalAlpha = 1;
         ctx.textAlign = "left";
       }
 
-      ctx.fillStyle = c.fg;
       ctx.font = font(m.body, 400);
       lines.forEach((ln, li) => ctx.fillText(ln, tx, startY + m.gap + li * m.lineH));
+
+      // 里程：格子右下角。上面的 widthFor 已經讓底部的內文行避開這一塊。
+      const km = kmText(day);
+      if (km) {
+        ctx.textAlign = "right";
+        ctx.font = font(Math.round(m.body * 0.92), 700);
+        ctx.fillText(km, x + dayW - 10, ry + rowH - 10);
+        ctx.textAlign = "left";
+      }
     });
 
     // 週跑量

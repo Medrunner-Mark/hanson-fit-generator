@@ -49,7 +49,9 @@ export const TYPE_INFO = {
   race: {
     name: "比賽日", short: "比賽", cls: "t-race",
     poster: { bg: "#e8a33d", fg: "#42270a" },
-    pdf:    { bg: "#fbe3c2", fg: "#5b3708", bar: "#e8a33d" },
+    // 比賽日是整份課表的終點，用深琥珀底＋白字讓它一眼跳出來。
+    // #a85607 對白字的對比約 5.2:1，過 WCAG AA；灰階列印時也是全表最深的一格。
+    pdf:    { bg: "#a85607", fg: "#ffffff", bar: "#ffd9a0" },
   },
 };
 
