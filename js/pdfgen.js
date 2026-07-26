@@ -9,7 +9,7 @@
 import { fmtPace } from "./paces.js";
 import { TYPE_INFO, dayHeaders } from "./schedule.js";
 import { describeDay } from "./describe.js";
-import { font, roundRect } from "./canvas-util.js";
+import { font, roundRect, fitText } from "./canvas-util.js";
 import { shortDate } from "./dates.js";
 import { cardLabelShort, fileStem } from "./plans.js";
 import { t } from "./i18n.js";
@@ -148,22 +148,20 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
   let y = 62;
 
   // ── 頁首 ──
-  ctx.textAlign = "left";
-  ctx.fillStyle = INK;
-  ctx.font = font(34, 700);
-  ctx.fillText(t("pdf.title", { level: plan.levelLabel, dist: plan.label }), MX, y);
-
-  // 目標時間：琥珀色徽章，讓人一翻開就看到自己在追什麼。
-  // 徽章必須塞進既有的頁首高度——把頁首撐高會壓縮 rowH，連帶讓自動字級掉一級。
+  // 先畫右邊的徽章，剩下的寬度才是標題可用的空間：英文標題較長，
+  // 沒有上限的話會直接壓到徽章上。
   const goalTxt = t("pdf.goal", { goal: tier.goal });
+  ctx.textAlign = "left";
   ctx.font = font(34, 700);
   const gpad = 20, gh = 46;
   const gw = ctx.measureText(goalTxt).width + gpad * 2;
   ctx.fillStyle = "#e8a33d";
   roundRect(ctx, W - MX - gw, y - 34, gw, gh, 10); ctx.fill();
   ctx.fillStyle = "#4a2c05";
-  ctx.textAlign = "left";
   ctx.fillText(goalTxt, W - MX - gw + gpad, y);
+
+  ctx.fillStyle = INK;
+  fitText(ctx, t("pdf.title", { level: plan.levelLabel, dist: plan.label }), MX, y, W - MX * 2 - gw - 24, 34, 700);
   y += 16;
   ctx.strokeStyle = LINE;
   ctx.lineWidth = 2;
@@ -183,8 +181,7 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
       roundRect(ctx, x, y, cw, ch, 8); ctx.fill();
       ctx.textAlign = "center";
       ctx.fillStyle = MUTED;
-      ctx.font = font(17, 500);
-      ctx.fillText(cardLabelShort(card), x + cw / 2, y + 25);
+      fitText(ctx, cardLabelShort(card), x + cw / 2, y + 25, cw - 10, 17, 500);
       ctx.fillStyle = INK;
       ctx.font = font(24, 700);
       ctx.fillText(fmtPace(tier[card.key] + (card.offsetSec || 0)), x + cw / 2, y + 53);
@@ -201,9 +198,9 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
   ctx.fillStyle = "#e8eff5";
   ctx.font = font(20, 700);
   ctx.textAlign = "center";
-  ctx.fillText(t("pdf.week"), MX + wkW / 2, y + 24);
-  dayHeaders().forEach((d, i) => ctx.fillText(d, MX + wkW + dayW * (i + 0.5), y + 24));
-  ctx.fillText(t("pdf.volume"), MX + wkW + dayW * 7 + volW / 2, y + 24);
+  fitText(ctx, t("pdf.week"), MX + wkW / 2, y + 24, wkW - 6, 20, 700);
+  dayHeaders().forEach((d, i) => fitText(ctx, d, MX + wkW + dayW * (i + 0.5), y + 24, dayW - 8, 20, 700));
+  fitText(ctx, t("pdf.volume"), MX + wkW + dayW * 7 + volW / 2, y + 24, volW - 8, 20, 700);
   const top = y + headH;
 
   const start = pageIdx * WEEKS_PER_PAGE;
@@ -291,11 +288,16 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
   ctx.textAlign = "left";
   ctx.fillStyle = MUTED;
   ctx.font = font(17, 400);
-  ctx.fillText(t("pdf.footNote"), MX, fy);
+  // 兩段頁尾共用一列。寬度用量測的、不要用固定比例：品牌那串在中文就要 554px，
+  // 硬切 36% 會把它縮小。先讓品牌拿它需要的（上限 55%），剩下的給左邊的說明。
+  const brand = t("pdf.brandLine", { page: pageIdx + 1, pages });
+  const availFoot = W - MX * 2;
+  ctx.font = font(17, 700);
+  const brandW = Math.min(ctx.measureText(brand).width, availFoot * 0.55);
+  fitText(ctx, t("pdf.footNote"), MX, fy, availFoot - brandW - 20, 17, 400);
   ctx.textAlign = "right";
   ctx.fillStyle = INK;
-  ctx.font = font(17, 700);
-  ctx.fillText(t("pdf.brandLine", { page: pageIdx + 1, pages }), W - MX, fy);
+  fitText(ctx, brand, W - MX, fy, brandW, 17, 700);
 
   return canvas;
 }

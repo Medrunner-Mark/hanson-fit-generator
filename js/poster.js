@@ -4,7 +4,7 @@
 
 import { fmtPace } from "./paces.js";
 import { TYPE_INFO, dayHeaders } from "./schedule.js";
-import { font, roundRect } from "./canvas-util.js";
+import { font, roundRect, fitText } from "./canvas-util.js";
 import { cardLabelShort } from "./plans.js";
 import { dayLabel } from "./describe.js";
 import { t } from "./i18n.js";
@@ -21,15 +21,16 @@ export function buildPoster(plan, tier) {
   ctx.fillRect(0, 0, W, H);
 
   // ── 標題 ──
+  // 標題與副標原本沒有任何寬度上限，英文的「Hansons Beginner Half Marathon
+  // 18-Week Plan」會直接衝出畫布，改走 fitText 自動讓步。
+  const titleW = W - 80;
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = "#ffffff";
-  ctx.font = font(60, 700);
-  ctx.fillText(t("poster.title", { level: plan.levelLabel }), W / 2, 116);
+  fitText(ctx, t("poster.title", { level: plan.levelLabel }), W / 2, 116, titleW, 60, 700);
 
   ctx.fillStyle = "#e8a33d";
-  ctx.font = font(46, 700);
-  ctx.fillText(t("poster.subtitle", { dist: plan.label, goal: tier.goal }), W / 2, 182);
+  fitText(ctx, t("poster.subtitle", { dist: plan.label, goal: tier.goal }), W / 2, 182, titleW, 46, 700);
 
   // ── 配速摘要（4 格：長跑 / 節奏 / 強化 / 速度）──
   const cards = plan.paceCards.slice(3, 7);
@@ -42,8 +43,7 @@ export function buildPoster(plan, tier) {
     ctx.fill();
     ctx.textAlign = "center";
     ctx.fillStyle = "#9fc0d8";
-    ctx.font = font(24, 500);
-    ctx.fillText(cardLabelShort(card), x + cw / 2, y + 44);
+    fitText(ctx, cardLabelShort(card), x + cw / 2, y + 44, cw - 16, 24, 500);
     ctx.fillStyle = "#ffffff";
     ctx.font = font(44, 700);
     ctx.fillText(fmtPace(tier[card.key]), x + cw / 2, y + 96);
@@ -68,13 +68,12 @@ export function buildPoster(plan, tier) {
   roundRect(ctx, tableX, headerY, W - marginX * 2, headerH, 10);
   ctx.fill();
   ctx.fillStyle = "#cfe0ec";
-  ctx.font = font(26, 700);
   ctx.textAlign = "center";
-  ctx.fillText(t("poster.week"), tableX + wkColW / 2, headerY + 34);
+  fitText(ctx, t("poster.week"), tableX + wkColW / 2, headerY + 34, wkColW - 8, 26, 700);
   dayHeaders().forEach((d, i) => {
-    ctx.fillText(d, tableX + wkColW + dayColW * (i + 0.5), headerY + 34);
+    fitText(ctx, d, tableX + wkColW + dayColW * (i + 0.5), headerY + 34, dayColW - 8, 26, 700);
   });
-  ctx.fillText(t("poster.volume"), tableX + wkColW + dayColW * 7 + totColW / 2, headerY + 34);
+  fitText(ctx, t("poster.volume"), tableX + wkColW + dayColW * 7 + totColW / 2, headerY + 34, totColW - 8, 26, 700);
 
   // 每一週
   plan.schedule.forEach((week, wi) => {
@@ -95,16 +94,15 @@ export function buildPoster(plan, tier) {
       roundRect(ctx, x + 3, y + 3, dayColW - 6, rowH - 6, 8);
       ctx.fill();
 
+      // 日期格只有約 111px 可用，英文的 Strength 在 23px 就要 104px，已經卡邊
+      const cellW = dayColW - 10;
       ctx.fillStyle = c.fg;
       if (day.t === "rest") {
-        ctx.font = font(26, 700);
-        ctx.fillText(info.short, x + dayColW / 2, y + rowH / 2 + 10);
+        fitText(ctx, info.short, x + dayColW / 2, y + rowH / 2 + 10, cellW, 26, 700);
       } else {
-        ctx.font = font(23, 700);
-        ctx.fillText(info.short, x + dayColW / 2, y + rowH / 2 - 2);
-        ctx.font = font(20, 500);
+        fitText(ctx, info.short, x + dayColW / 2, y + rowH / 2 - 2, cellW, 23, 700);
         const lbl = day.t === "race" ? `${day.d}K` : dayLabel(day);
-        ctx.fillText(lbl, x + dayColW / 2, y + rowH / 2 + 24);
+        fitText(ctx, lbl, x + dayColW / 2, y + rowH / 2 + 24, cellW, 20, 500);
       }
     });
 
@@ -119,11 +117,9 @@ export function buildPoster(plan, tier) {
   const footY = tableTop + 18 * rowH + 56;
   ctx.textAlign = "center";
   ctx.fillStyle = "#ffffff";
-  ctx.font = font(34, 700);
-  ctx.fillText(t("ui.authorName"), W / 2, footY);
+  fitText(ctx, t("ui.authorName"), W / 2, footY, titleW, 34, 700);
   ctx.fillStyle = "#7d9db5";
-  ctx.font = font(24, 400);
-  ctx.fillText("medrunner-mark.github.io/hanson-fit-generator", W / 2, footY + 42);
+  fitText(ctx, "medrunner-mark.github.io/hanson-fit-generator", W / 2, footY + 42, titleW, 24, 400);
 
   return canvas;
 }

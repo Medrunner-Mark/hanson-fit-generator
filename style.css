@@ -20,6 +20,15 @@ body {
   padding: 24px 16px;
 }
 
+/* 網頁字型也依語言切換。body 本身不動，確保中文渲染與改前完全一致；
+   ja/en 都保留中文字型當尾端後備（品牌字串「Med日跑者」含漢字）。 */
+html[lang="ja"] body {
+  font-family: "Noto Sans JP", "Yu Gothic UI", "Yu Gothic", "Hiragino Sans", "Meiryo", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+html[lang="en"] body {
+  font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+
 .card {
   max-width: 720px;
   margin: 0 auto;
@@ -306,6 +315,14 @@ button.dl-btn-green:hover { background: #25543e; }
 
 .cal-type { display: block; font-weight: 700; white-space: nowrap; }
 .cal-label { display: block; font-size: 0.92em; font-weight: 500; opacity: 0.9; white-space: nowrap; }
+
+/* 中文短名（輕鬆／速度／節奏）兩個字剛好，英文的 Strength / Recovery 會撐爆
+   table-layout: fixed 的格子。只放寬非中文，中文版面維持一模一樣。 */
+html[lang="ja"] .cal-type, html[lang="ja"] .cal-label,
+html[lang="en"] .cal-type, html[lang="en"] .cal-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 /* 比賽日期：格子本來就有類型＋距離兩行，窄螢幕再加日期會擠爆，只在桌機寬度顯示 */
 .cal-date { display: none; }
