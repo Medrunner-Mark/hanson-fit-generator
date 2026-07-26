@@ -3,6 +3,7 @@
 
 import { Encoder, Profile } from "https://esm.sh/@garmin/fitsdk@21.171.0";
 import { fmtPace, paceToScaledMps, goalCode } from "./paces.js";
+import { workoutLabel } from "./workout-meta.js";
 
 // 各種 step 的配速區間（回傳 [慢端秒/km, 快端秒/km]）
 // export 供 jsongen.js 共用，確保 FIT 與 JSON 兩種格式的配速數字完全一致
@@ -67,9 +68,16 @@ function intensityOf(step) {
   }
 }
 
-// 顯示/檔名用名稱："漢森進階sub255_長跑26K"／"漢森進階半馬sub145_節奏跑10K"
-export function workoutName(workout, tier, plan) {
-  return `${plan.namePrefix}sub${goalCode(tier.goal)}_${workout.label}`;
+// 檔名用："漢森進階sub255_長跑26K"／"漢森進階半馬sub145_節奏跑10K"
+export function workoutFileName(workout, tier, plan) {
+  return `${plan.namePrefix}sub${goalCode(tier.goal)}_${workoutLabel(workout)}`;
+}
+
+// 錶上與 Garmin Connect 顯示用的課表名稱。目前與檔名完全相同——刻意分成兩個函式是
+// 為了將來：日文課表名較長，若發現部分 Garmin 錶會截斷顯示，只要改這裡縮短即可，
+// 不會動到檔名（作者的教學影片截圖依賴檔名不變）。
+export function wktName(workout, tier, plan) {
+  return workoutFileName(workout, tier, plan);
 }
 
 export function buildWorkoutFit(workout, tier, plan) {
@@ -86,7 +94,7 @@ export function buildWorkoutFit(workout, tier, plan) {
 
   encoder.writeMesg({
     mesgNum: Profile.MesgNum.WORKOUT,
-    wktName: workoutName(workout, tier, plan),
+    wktName: wktName(workout, tier, plan),
     sport: "running",
     subSport: "generic",
     numValidSteps: workout.steps.length,

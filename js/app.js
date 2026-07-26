@@ -1,5 +1,6 @@
 import { fmtPace, goalCode } from "./paces.js";
-import { buildWorkoutFit, workoutName } from "./fitgen.js";
+import { buildWorkoutFit, workoutFileName } from "./fitgen.js";
+import { workoutType, workoutCategory } from "./workout-meta.js";
 import { workoutJsonText } from "./jsongen.js";
 import { DAY_HEADERS, TYPE_INFO } from "./schedule.js";
 import { PLANS } from "./plans.js";
@@ -69,21 +70,22 @@ function downloadBytes(bytes, filename) {
 function renderWorkoutList() {
   const t = currentTier();
   const plan = currentPlan();
-  const byCategory = new Map();
+  const byType = new Map();
   for (const w of plan.workouts) {
-    if (!byCategory.has(w.category)) byCategory.set(w.category, []);
-    byCategory.get(w.category).push(w);
+    const type = workoutType(w);
+    if (!byType.has(type)) byType.set(type, []);
+    byType.get(type).push(w);
   }
 
   workoutList.innerHTML = "";
-  for (const [category, items] of byCategory) {
+  for (const [, items] of byType) {
     const section = document.createElement("section");
     section.className = "category";
-    section.innerHTML = `<h3>${category}</h3>`;
+    section.innerHTML = `<h3>${workoutCategory(items[0])}</h3>`;
     const ul = document.createElement("ul");
     for (const w of items) {
       const li = document.createElement("li");
-      const name = workoutName(w, t, plan);
+      const name = workoutFileName(w, t, plan);
       li.innerHTML = `<span class="wname">${name}</span>`;
       const btns = document.createElement("span");
       btns.className = "btn-group";
@@ -124,7 +126,7 @@ async function downloadZip(kind) {
   try {
     const zip = new JSZip();
     for (const w of plan.workouts) {
-      const name = workoutName(w, t, plan);
+      const name = workoutFileName(w, t, plan);
       if (kind === "fit") {
         zip.file(`${name}.fit`, buildWorkoutFit(w, t, plan));
       } else {

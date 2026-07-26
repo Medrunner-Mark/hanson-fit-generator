@@ -4,7 +4,7 @@
 // schema 參考：外掛原始碼 (fulippo/share-your-garmin-workout) 與 mkuthan/garmin-workouts。
 // 配速數字與 FIT 版共用同一套函式（fitgen.js 的 paceRange/stepNotes），保證兩種格式一致。
 
-import { paceRange, stepNotes, workoutName } from "./fitgen.js";
+import { paceRange, stepNotes, wktName } from "./fitgen.js";
 import { paceToScaledMps } from "./paces.js";
 
 const SPORT = { sportTypeId: 1, sportTypeKey: "running" };
@@ -102,7 +102,7 @@ export function buildWorkoutJson(workout, tier, plan) {
   const steps = serialize(toTree(workout.steps), null);
 
   return {
-    workoutName: workoutName(workout, tier, plan),
+    workoutName: wktName(workout, tier, plan),
     description: `漢森${plan.levelLabel}${plan.label}課表產生器（目標 ${tier.goal}）｜Med日跑者`,
     sportType: SPORT,
     workoutSegments: [

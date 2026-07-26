@@ -3,10 +3,12 @@
 // 用於 PDF 課表；與 xlsx 的寫法同精神，但帶入該目標時間的實際配速數字。
 
 import { fmtPace } from "./paces.js";
+import { ID_PREFIX } from "./workout-meta.js";
 
 // 行事曆的一天 → 課表模板。依既有 id 命名規則對應。
+// 非課表類型的日子（輕鬆跑/休息/比賽）沒有對應前綴，直接回 null。
 export function resolveWorkout(plan, day) {
-  const prefix = { speed: "speed_", strength: "str_", tempo: "tempo_", long: "long_" }[day.t];
+  const prefix = ID_PREFIX[day.t];
   if (!prefix) return null;
   const id = prefix + day.label.toLowerCase();
   return plan.workouts.find(w => w.id.toLowerCase() === id) || null;

@@ -11,42 +11,42 @@
 
 export const HALF_WORKOUTS = [
   // ─── 速度跑（第2-10週，5-10K配速）───
-  { id: "speed_12x400", category: "速度跑", label: "速度跑12x400", steps: [
+  { id: "speed_12x400", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 400, paceKey: "speed" },
     { kind: "jog", dist: 400 },
     { kind: "repeat", backTo: 1, times: 12 },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "speed_8x600", category: "速度跑", label: "速度跑8x600", steps: [
+  { id: "speed_8x600", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 600, paceKey: "speed" },
     { kind: "jog", dist: 400 },
     { kind: "repeat", backTo: 1, times: 8 },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "speed_6x800", category: "速度跑", label: "速度跑6x800", steps: [
+  { id: "speed_6x800", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 800, paceKey: "speed" },
     { kind: "jog", dist: 400 },
     { kind: "repeat", backTo: 1, times: 6 },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "speed_5x1000", category: "速度跑", label: "速度跑5x1000", steps: [
+  { id: "speed_5x1000", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 1000, paceKey: "speed" },
     { kind: "jog", dist: 600 },
     { kind: "repeat", backTo: 1, times: 5 },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "speed_4x1200", category: "速度跑", label: "速度跑4x1200", steps: [
+  { id: "speed_4x1200", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 1200, paceKey: "speed" },
     { kind: "jog", dist: 600 },
     { kind: "repeat", backTo: 1, times: 4 },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "speed_3x2000", category: "速度跑", label: "速度跑3x2000", steps: [
+  { id: "speed_3x2000", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 2000, paceKey: "speed" },
     { kind: "jog", dist: 800 },
@@ -55,28 +55,28 @@ export const HALF_WORKOUTS = [
   ]},
 
   // ─── 強化跑（第11-17週，10K配速）───
-  { id: "str_6x2000", category: "強化跑", label: "強化跑6x2000", steps: [
+  { id: "str_6x2000", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 2000, paceKey: "tenK" },
     { kind: "jog", dist: 400 },
     { kind: "repeat", backTo: 1, times: 6 },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "str_4x2000", category: "強化跑", label: "強化跑4x2000", steps: [
+  { id: "str_4x2000", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 2000, paceKey: "tenK" },
     { kind: "jog", dist: 800 },
     { kind: "repeat", backTo: 1, times: 4 },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "str_3x3000", category: "強化跑", label: "強化跑3x3000", steps: [
+  { id: "str_3x3000", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 3000, paceKey: "tenK" },
     { kind: "jog", dist: 800 },
     { kind: "repeat", backTo: 1, times: 3 },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "str_2x5000", category: "強化跑", label: "強化跑2x5000", steps: [
+  { id: "str_2x5000", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 5000, paceKey: "tenK" },
     { kind: "jog", dist: 2000 },
@@ -85,40 +85,40 @@ export const HALF_WORKOUTS = [
   ]},
 
   // ─── 節奏跑（半馬配速 HMP，2K暖身＋2K收操）───
-  { id: "tempo_5k", category: "節奏跑", label: "節奏跑5K", steps: [
+  { id: "tempo_5k", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 5000, paceKey: "hmp" },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "tempo_6k", category: "節奏跑", label: "節奏跑6K", steps: [
+  { id: "tempo_6k", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 6000, paceKey: "hmp" },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "tempo_8k", category: "節奏跑", label: "節奏跑8K", steps: [
+  { id: "tempo_8k", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 8000, paceKey: "hmp" },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "tempo_10k", category: "節奏跑", label: "節奏跑10K", steps: [
+  { id: "tempo_10k", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 10000, paceKey: "hmp" },
     { kind: "cd", dist: 2000 },
   ]},
-  { id: "tempo_11k", category: "節奏跑", label: "節奏跑11K", steps: [
+  { id: "tempo_11k", steps: [
     { kind: "wu", dist: 2000 },
     { kind: "main", dist: 11000, paceKey: "hmp" },
     { kind: "cd", dist: 2000 },
   ]},
 
   // ─── 長跑（長跑配速，單一段落）───
-  { id: "long_16k", category: "長跑", label: "長跑16K", steps: [
+  { id: "long_16k", steps: [
     { kind: "main", dist: 16000, paceKey: "long" },
   ]},
-  { id: "long_19k", category: "長跑", label: "長跑19K", steps: [
+  { id: "long_19k", steps: [
     { kind: "main", dist: 19000, paceKey: "long" },
   ]},
-  { id: "long_23k", category: "長跑", label: "長跑23K", steps: [
+  { id: "long_23k", steps: [
     { kind: "main", dist: 23000, paceKey: "long" },
   ]},
 ];
