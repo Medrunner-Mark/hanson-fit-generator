@@ -133,7 +133,18 @@ export const LINKS = {
 //   data-i18n        → textContent
 //   data-i18n-html   → innerHTML（值可為陣列，以 <br> 相接）
 //   data-i18n-attr   → "title:key;alt:key2"
+// index.html 裡留作預設值的中文原文，在第一次套用譯文之前先抓下來。
+// 之後 DOM 已經被換成當前語言，再拿它跟中文字典比對就沒有意義——用日文或英文
+// 載入時會整片誤報漂移，而一個會亂叫的檢查等於沒有檢查。
+const htmlDefaults = new Map();
+let defaultsCaptured = false;
+
 export function applyI18n(root = document) {
+  if (!defaultsCaptured) {
+    defaultsCaptured = true;
+    root.querySelectorAll("[data-i18n]").forEach(el =>
+      htmlDefaults.set(el.dataset.i18n, el.textContent.trim()));
+  }
   root.querySelectorAll("[data-i18n]").forEach(el => {
     el.textContent = t(el.dataset.i18n);
   });
@@ -161,13 +172,14 @@ export function checkKeys() {
     const gaps = Object.keys(STRINGS).filter(k => STRINGS[k][l] === undefined);
     if (gaps.length) missing[l] = gaps;
   }
+  // 比對「載入時 index.html 上的中文」與中文字典。有人改了 HTML 卻忘了改字典
+  // （或反過來）就會在這裡現形，而且不受目前顯示語言影響。
   const drift = [];
   withLang("zh", () => {
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-      const expect = t(el.dataset.i18n);
-      const actual = el.textContent.trim();
-      if (actual && expect.trim() !== actual) drift.push({ key: el.dataset.i18n, html: actual, dict: expect });
-    });
+    for (const [key, html] of htmlDefaults) {
+      const expect = t(key).trim();
+      if (html && expect !== html) drift.push({ key, html, dict: expect });
+    }
   });
   return { 總key數: Object.keys(STRINGS).length, 缺漏: missing, 中文漂移: drift };
 }

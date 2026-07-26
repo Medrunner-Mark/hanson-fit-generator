@@ -25,14 +25,16 @@ const BODY_MAX = 22, BODY_MIN = 12;
 
 const INK = "#16304a", MUTED = "#6b7c8c", LINE = "#d8e0e8";
 
-// 混合中英文的斷行：英數字與 3:45 這類 token 不切開，中文可逐字斷。
-// 單一 token 本身就超過行寬時逐字硬斷——沒有這道保險，長英文字會靜默溢出格子。
+// 混合中英日文的斷行：英數字與 3:45 這類 token 不切開，中文可逐字斷。
+// 連續片假名也視為一個 token——日文的外來語幾乎都是片假名，逐字斷會把
+// 「クロストレーニング」切成「クロスト／レーニング」，讀起來很卡。
+// 單一 token 本身就超過行寬時逐字硬斷——沒有這道保險，長字會靜默溢出格子。
 //
 // width 可以是數字，也可以是 (行號) => 寬度 的函式：里程數字貼在格子右下角，
 // 落在那一帶的行必須讓開，否則滿版的格子會疊字。
 function wrapText(ctx, text, width) {
   const wOf = typeof width === "function" ? width : () => width;
-  const tokens = text.match(/[A-Za-z0-9:.@×–\-]+|\s+|[^\s]/g) || [];
+  const tokens = text.match(/[A-Za-z0-9:.@×–\-]+|[ァ-ヶー]+|\s+|[^\s]/g) || [];
   const lines = [];
   let line = "";
   for (const tk of tokens) {
