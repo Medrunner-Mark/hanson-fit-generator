@@ -44,20 +44,31 @@ function normalize(tag) {
   return null;
 }
 
+// 字典已經翻完的語言。只有這些會出現在切換器上，也只有這些能被自動偵測選中——
+// 半翻譯的語言會整片退回中文，使用者看到的是「切了但沒反應」，不如先不要露出來。
+// 好處是加新語言不必動 UI：字典補齊的那一刻按鈕就自己出現。
+export function completeLangs() {
+  const keys = Object.keys(STRINGS);
+  return LANGS.filter(l => l === FALLBACK || keys.every(k => STRINGS[k][l] !== undefined));
+}
+
 // 判定順序：?lang= → localStorage → 瀏覽器語言 → UNKNOWN_DEFAULT
 export function resolveLang() {
-  const q = normalize(new URLSearchParams(location.search).get("lang"));
+  const ok = completeLangs();
+  const pick = l => (l && ok.includes(l) ? l : null);
+
+  const q = pick(normalize(new URLSearchParams(location.search).get("lang")));
   if (q) return q;                       // 深連結用，刻意不寫進 localStorage
 
-  const saved = normalize(store(STORE_KEY));
+  const saved = pick(normalize(store(STORE_KEY)));
   if (saved) return saved;               // 只有使用者主動點過切換器才會有值
 
   // 掃過整個清單而不是只取 [0]：["ko-KR","en-US","en"] 取第一個就漏掉英文了
   for (const tag of navigator.languages || [navigator.language]) {
-    const hit = normalize(tag);
+    const hit = pick(normalize(tag));
     if (hit) return hit;
   }
-  return UNKNOWN_DEFAULT;
+  return pick(UNKNOWN_DEFAULT) ?? FALLBACK;
 }
 
 export function setLang(next, { persist = false } = {}) {

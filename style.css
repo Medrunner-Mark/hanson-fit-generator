@@ -64,6 +64,13 @@ h2 {
   align-items: center;
 }
 
+/* 語言切換器：卡片右上角、自成一列。與標題同列會把副標可用寬度從 664px
+   壓到約 424px，副標會從兩行變三行。 */
+.lang-bar { display: flex; justify-content: flex-end; }
+/* .plan-switch 自帶 margin-top:18px，不歸零會把整張卡片的內容往下推 */
+.lang-bar .plan-switch { margin-top: 0; }
+.lang-switch button { padding: 8px 16px; font-size: 15px; }
+
 .plan-switch {
   display: inline-flex;
   gap: 0;

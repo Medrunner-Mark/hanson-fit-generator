@@ -4,7 +4,7 @@ import { workoutType, workoutCategory } from "./workout-meta.js";
 import { workoutJsonText } from "./jsongen.js";
 import { dayHeaders, TYPE_INFO } from "./schedule.js";
 import { PLANS, cardLabel, fileStem } from "./plans.js";
-import { t, setLang, resolveLang, applyI18n, checkKeys, htmlLang } from "./i18n.js";
+import { t, lang, setLang, resolveLang, applyI18n, checkKeys, htmlLang, completeLangs } from "./i18n.js";
 import { dayLabel } from "./describe.js";
 import { buildPoster } from "./poster.js";
 import { downloadPdf } from "./pdfgen.js";
@@ -210,6 +210,34 @@ levelSwitch.querySelectorAll("button").forEach(btn => {
   });
 });
 
+// 語言切換。按鈕文字（中文／日本語／English）永遠不翻譯——英文使用者用中文瀏覽器
+// 進來時自動偵測會給中文，他必須看得懂哪一顆是回英文的出口。
+const langSwitch = document.getElementById("lang-switch");
+// 只留下字典已翻完的語言；未完成的按鈕直接移除，不會出現「切了沒反應」的情況
+const availableLangs = completeLangs();
+langSwitch.querySelectorAll("button").forEach(b => {
+  if (!availableLangs.includes(b.dataset.lang)) b.remove();
+});
+// 只剩一種語言就整個切換器藏起來（沒得選的控制項只是雜訊）
+if (availableLangs.length < 2) langSwitch.closest(".lang-bar").style.display = "none";
+
+function markLangButton() {
+  langSwitch.querySelectorAll("button").forEach(b =>
+    b.classList.toggle("active", b.dataset.lang === lang()));
+}
+langSwitch.querySelectorAll("button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.lang === lang()) return;
+    // 只有主動點擊才寫入 localStorage：這樣「有存值」永遠代表使用者選過
+    setLang(btn.dataset.lang, { persist: true });
+    markLangButton();
+    applyI18n();
+    switchPlan();          // 配速卡／課表清單／行事曆全部重繪
+    raceDateInput.dispatchEvent(new Event("change"));   // 非週日提示也要換語言
+    renderVisitors();      // 非同步抓回來的人次不在重繪路徑上，要另外叫一次
+  });
+});
+
 goalSelect.addEventListener("change", () => {
   renderPaceSummary();
   renderWorkoutList();
@@ -271,22 +299,30 @@ document.getElementById("poster-btn").addEventListener("click", () => {
   }
 });
 
-// 頁尾外顯造訪人次（GoatCounter 公開計數 JSON；抓不到就靜默不顯示）
-(async () => {
+// 頁尾外顯造訪人次（GoatCounter 公開計數 JSON；抓不到就靜默不顯示）。
+// 人次數字存起來另外重繪：它是非同步抓回來的，不在 switchPlan() 的重繪路徑上，
+// 只在載入時寫一次的話，切換語言後會留下上一個語言的句子。
+let visitorCount = 0;
+function renderVisitors() {
   const el = document.getElementById("visitor-count");
-  if (!el) return;
+  if (!el || !visitorCount) return;
+  el.textContent = t("ui.visitors", { n: visitorCount.toLocaleString(htmlLang()) });
+}
+
+(async () => {
   try {
     const r = await fetch("https://medrunner.goatcounter.com/counter/TOTAL.json");
     if (!r.ok) return;
     const d = await r.json();
     const n = Number(String(d.count).replace(/[^\d]/g, ""));
-    if (n > 0) el.textContent = t("ui.visitors", { n: n.toLocaleString(htmlLang()) });
+    if (n > 0) { visitorCount = n; renderVisitors(); }
   } catch (e) { /* 靜默失敗 */ }
 })();
 
 // ── 啟動 ──
 // 先定語言再套字串，最後才渲染：switchPlan() 內的每一段渲染都會查字典。
 setLang(resolveLang());
+markLangButton();          // 起始選取狀態由實際判定的語言決定，不是 HTML 寫死的那顆
 applyI18n();
 switchPlan();
 
