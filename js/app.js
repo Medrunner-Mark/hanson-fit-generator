@@ -209,10 +209,16 @@ goalSelect.addEventListener("change", () => {
 zipBtn.addEventListener("click", () => downloadZip("fit"));
 document.getElementById("json-zip-btn").addEventListener("click", () => downloadZip("json"));
 
-document.getElementById("pdf-btn").addEventListener("click", () => {
+document.getElementById("pdf-btn").addEventListener("click", async () => {
   const plan = currentPlan(), t = currentTier();
   trackDownload("pdf");
   statusEl.textContent = "產生 PDF…";
+  // 300dpi 的兩頁畫布約需 2-3 秒同步運算，先讓瀏覽器把狀態文字畫出來再開工。
+  // 分頁在背景時 requestAnimationFrame 不會觸發，所以一定要有 setTimeout 保底。
+  await new Promise(r => {
+    requestAnimationFrame(() => requestAnimationFrame(r));
+    setTimeout(r, 50);
+  });
   try {
     downloadPdf(plan, t);
     statusEl.textContent = "";
