@@ -10,6 +10,7 @@ import { fmtPace, goalCode } from "./paces.js";
 import { TYPE_INFO, DAY_HEADERS } from "./schedule.js";
 import { describeDay } from "./describe.js";
 import { font, roundRect } from "./canvas-util.js";
+import { shortDate } from "./dates.js";
 
 // A4 直式 @150dpi 的邏輯座標
 const W = 1240, H = 1754;
@@ -51,9 +52,15 @@ function wrapText(ctx, text, maxW) {
   return lines;
 }
 
-// 由 body 字級推導同一格內其他尺寸，讓整組隨字級等比縮放
+// 格內內容一律靠上對齊，剩下的空白全部落在下半部供手寫筆記。
+// 副作用正是我們要的：同一週七格的標題都從同一個 y 起算，自動齊高。
+const TOP_PAD = 10;
+
+// 由 body 字級推導同一格內其他尺寸，讓整組隨字級等比縮放。
+// typeSize 係數上限是 1.25：再大 gap 就會吃掉一行預算，把 pickBodySize 從 18px
+// 逼到 17px。實測 18px 時有 378 個格子需要滿 5 行，一行都讓不得。
 function metrics(body) {
-  const typeSize = Math.round(body * 1.15);        // 類型名（粗體）
+  const typeSize = Math.round(body * 1.25);        // 類型名（粗體）
   return {
     body,
     typeSize,
@@ -96,7 +103,7 @@ function pickBodySize(plan, tier) {
   return BODY_MIN;
 }
 
-function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE }) {
+function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = null }) {
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(W * scale);
   canvas.height = Math.round(H * scale);
@@ -115,10 +122,18 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE }) {
   ctx.fillStyle = INK;
   ctx.font = font(34, 700);
   ctx.fillText(`漢森${plan.levelLabel}${plan.label}課表 18 週`, MX, y);
-  ctx.textAlign = "right";
-  ctx.fillStyle = "#b4791f";
-  ctx.font = font(28, 700);
-  ctx.fillText(`目標 ${tier.goal}`, W - MX, y);
+
+  // 目標時間：琥珀色徽章，讓人一翻開就看到自己在追什麼。
+  // 徽章必須塞進既有的頁首高度——把頁首撐高會壓縮 rowH，連帶讓自動字級掉一級。
+  const goalTxt = `目標 ${tier.goal}`;
+  ctx.font = font(34, 700);
+  const gpad = 20, gh = 46;
+  const gw = ctx.measureText(goalTxt).width + gpad * 2;
+  ctx.fillStyle = "#e8a33d";
+  roundRect(ctx, W - MX - gw, y - 34, gw, gh, 10); ctx.fill();
+  ctx.fillStyle = "#4a2c05";
+  ctx.textAlign = "left";
+  ctx.fillText(goalTxt, W - MX - gw + gpad, y);
   y += 16;
   ctx.strokeStyle = LINE;
   ctx.lineWidth = 2;
@@ -189,7 +204,6 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE }) {
       ctx.textAlign = "left";
       const tx = x + 12, maxW = dayW - 20;
 
-      // 先算出內容總高，讓整塊在格內垂直置中（避免文字全擠在上緣）
       ctx.font = font(m.body, 400);
       const all = wrapText(ctx, describeDay(plan, day, tier), maxW);
       const lines = all.slice(0, maxLines);
@@ -199,13 +213,49 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE }) {
         while (t && ctx.measureText(t + "…").width > maxW) t = t.slice(0, -1);
         lines[lines.length - 1] = t + "…";
       }
-      const blockH = m.gap + lines.length * m.lineH;
-      const startY = ry + Math.max(8, (rowH - blockH) / 2) + m.capOffset;
+      // 靠上對齊：空白全部集中到格子下半部，留給使用者手寫筆記
+      const startY = ry + TOP_PAD + m.capOffset;
 
       ctx.fillStyle = c.fg;
       ctx.font = font(m.typeSize, 700);
       ctx.fillText(TYPE_INFO[day.t].short, tx, startY);
+      const typeW = ctx.measureText(TYPE_INFO[day.t].short).width;
 
+      // 里程與日期都放在標題這一列的右側，不佔內文行數預算。
+      // 不放右下角是因為滿版（5 行）的格子會一路寫到底，右下角根本沒有空位——
+      // 而慢速目標時間的使用者正好整份課表都是滿版格子。
+      const km = day.d > 0 ? String(day.d) : "";
+      const ds = dates ? shortDate(dates[start + i][di]) : "";
+      if (km || ds) {
+        // 與類型名至少保留 8px 間距。「比賽 11/29 42.2」這種最長的組合在固定字級下
+        // 會直接撞上類型名，所以量測後不夠寬就整組等比縮小。
+        const avail = dayW - 22 - typeW - 8;
+        let kf = Math.round(m.body * 0.92), df = Math.round(m.body * 0.76);
+        const groupW = () => {
+          let w = 0;
+          if (km) { ctx.font = font(kf, 700); w += ctx.measureText(km).width; }
+          if (ds) { ctx.font = font(df, 500); w += ctx.measureText(ds).width; }
+          return w + (km && ds ? 6 : 0);
+        };
+        while (groupW() > avail && kf > 10) { kf--; if (df > 9) df--; }
+
+        ctx.textAlign = "right";
+        let rx = x + dayW - 10;
+        if (km) {
+          ctx.fillStyle = c.fg;
+          ctx.font = font(kf, 700);
+          ctx.fillText(km, rx, startY);
+          rx -= ctx.measureText(km).width + 6;
+        }
+        if (ds) {
+          ctx.fillStyle = MUTED;
+          ctx.font = font(df, 500);
+          ctx.fillText(ds, rx, startY);
+        }
+        ctx.textAlign = "left";
+      }
+
+      ctx.fillStyle = c.fg;
       ctx.font = font(m.body, 400);
       lines.forEach((ln, li) => ctx.fillText(ln, tx, startY + m.gap + li * m.lineH));
     });
@@ -237,13 +287,14 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE }) {
 const pageCount = plan => Math.ceil(plan.schedule.length / WEEKS_PER_PAGE);
 
 // 產生全部頁面的畫布（供 PDF 輸出，也方便單獨檢視版面）
-export function renderPages(plan, tier) {
+// dates 省略時不畫任何日期，維持未選比賽日的原樣。
+export function renderPages(plan, tier, dates = null) {
   const pages = pageCount(plan);
   const body = pickBodySize(plan, tier);
-  return Array.from({ length: pages }, (_, p) => drawPage(plan, tier, p, { body, pages }));
+  return Array.from({ length: pages }, (_, p) => drawPage(plan, tier, p, { body, pages, dates }));
 }
 
-export function downloadPdf(plan, tier) {
+export function downloadPdf(plan, tier, dates = null) {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pages = pageCount(plan);
@@ -253,7 +304,7 @@ export function downloadPdf(plan, tier) {
     let url = "";
     // 300dpi 的畫布約 35MB；記憶體吃緊的裝置可能產不出來，逐級降階重試
     for (const scale of [SCALE, 1.5, 1]) {
-      const canvas = drawPage(plan, tier, p, { body, pages, scale });
+      const canvas = drawPage(plan, tier, p, { body, pages, scale, dates });
       url = canvas.toDataURL("image/png");
       canvas.width = canvas.height = 0;   // 立刻釋放，不要同時持有兩頁
       if (url && url.length > 100) break;

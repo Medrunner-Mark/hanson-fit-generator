@@ -305,6 +305,34 @@ button.dl-btn-green:hover { background: #25543e; }
 .cal-type { display: block; font-weight: 700; white-space: nowrap; }
 .cal-label { display: block; font-size: 0.92em; font-weight: 500; opacity: 0.9; white-space: nowrap; }
 
+/* 比賽日期：格子本來就有類型＋距離兩行，窄螢幕再加日期會擠爆，只在桌機寬度顯示 */
+.cal-date { display: none; }
+@media (min-width: 560px) {
+  .cal-date { display: block; font-size: 0.82em; font-weight: 500; opacity: 0.68; white-space: nowrap; }
+}
+
+.race-date-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0 4px;
+}
+
+.race-date-row label { font-weight: 600; color: var(--navy); }
+
+.race-date-row input[type="date"] {
+  font: inherit;
+  font-size: 16px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: #fff;
+}
+
+.race-date-note { font-size: 14px; color: #a05a00; }
+
 .cal-total {
   background: #eef1f4;
   color: var(--text);

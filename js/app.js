@@ -6,6 +6,7 @@ import { DAY_HEADERS, TYPE_INFO } from "./schedule.js";
 import { PLANS } from "./plans.js";
 import { buildPoster } from "./poster.js";
 import { downloadPdf } from "./pdfgen.js";
+import { parseRaceDate, scheduleDates, shortDate, isSunday } from "./dates.js";
 
 const distanceSwitch = document.getElementById("distance-switch");
 const levelSwitch = document.getElementById("level-switch");
@@ -15,6 +16,8 @@ const paceSummary = document.getElementById("pace-summary");
 const workoutList = document.getElementById("workout-list");
 const zipBtn = document.getElementById("zip-btn");
 const statusEl = document.getElementById("status");
+const raceDateInput = document.getElementById("race-date");
+const raceDateNote = document.getElementById("race-date-note");
 
 let currentDistance = "marathon";
 let currentLevel = "advanced";
@@ -145,6 +148,9 @@ async function downloadZip(kind) {
   }
 }
 
+// 目前選定的比賽日對應的整份日期表；未選則為 null
+const currentDates = () => scheduleDates(currentPlan(), parseRaceDate(raceDateInput.value));
+
 function renderCalendar() {
   const legend = document.getElementById("calendar-legend");
   legend.innerHTML = Object.values(TYPE_INFO)
@@ -152,15 +158,17 @@ function renderCalendar() {
     .join("");
 
   const table = document.getElementById("calendar");
+  const dates = currentDates();
   const head = `<tr><th>週次</th>${DAY_HEADERS.map(d => `<th>${d}</th>`).join("")}<th>週跑量</th></tr>`;
   const rows = currentPlan().schedule.map((week, wi) => {
     const total = week.reduce((sum, day) => sum + day.d, 0);
-    const cells = week.map(day => {
+    const cells = week.map((day, di) => {
       const info = TYPE_INFO[day.t];
       // 比賽日格內只留距離避免溢出（label 形如「全馬 42.2K」，但不從字串切，直接用 day.d）
       const text = day.t === "race" ? `${day.d}K` : day.label;
       const sub = day.t === "rest" ? "" : `<span class="cal-label">${text}</span>`;
-      return `<td class="${info.cls}"><span class="cal-type">${info.short}</span>${sub}</td>`;
+      const date = dates ? `<span class="cal-date">${shortDate(dates[wi][di])}</span>` : "";
+      return `<td class="${info.cls}">${date}<span class="cal-type">${info.short}</span>${sub}</td>`;
     }).join("");
     const totalTxt = Math.round(total * 10) / 10;
     return `<tr><th>W${wi + 1}</th>${cells}<td class="cal-total">${totalTxt}K</td></tr>`;
@@ -208,6 +216,16 @@ goalSelect.addEventListener("change", () => {
   renderWorkoutList();
 });
 
+// 比賽日期：課表最後一格（第18週星期日）＝比賽日，其餘往前回推。
+// 多數賽事在星期日；選到其他星期不阻擋，只提醒星期欄位會與實際日期差幾天。
+raceDateInput.addEventListener("change", () => {
+  const d = parseRaceDate(raceDateInput.value);
+  raceDateNote.textContent = d && !isSunday(d)
+    ? "提醒：你選的不是星期日，課表的星期欄位會與實際日期對不上。"
+    : "";
+  renderCalendar();
+});
+
 zipBtn.addEventListener("click", () => downloadZip("fit"));
 document.getElementById("json-zip-btn").addEventListener("click", () => downloadZip("json"));
 
@@ -222,7 +240,7 @@ document.getElementById("pdf-btn").addEventListener("click", async () => {
     setTimeout(r, 50);
   });
   try {
-    downloadPdf(plan, t);
+    downloadPdf(plan, t, currentDates());
     statusEl.textContent = "";
   } catch (err) {
     statusEl.textContent = "PDF 產生失敗：" + err.message;

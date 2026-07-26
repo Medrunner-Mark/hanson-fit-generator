@@ -37,7 +37,9 @@ export const TYPE_INFO = {
   long: {
     name: "長跑", short: "長跑", cls: "t-long",
     poster: { bg: "#0070C0", fg: "#ffffff" },
-    pdf:    { bg: "#d3e7f7", fg: "#0b3d63", bar: "#0070C0" },
+    // PDF 底色刻意比輕鬆跑（#dceaf6）深一階：兩者明度差約 11%，黑白雷射列印也分得出來。
+    // 不改成別的色相是因為色相不同但明度相近的兩塊，轉灰階後會變成差不多的灰。
+    pdf:    { bg: "#a9cfee", fg: "#0b3d63", bar: "#0070C0" },
   },
   rest: {
     name: "休息日", short: "休息", cls: "t-rest",
