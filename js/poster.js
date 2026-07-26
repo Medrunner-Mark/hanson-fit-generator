@@ -49,7 +49,7 @@ export function buildPoster(plan, tier) {
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = "#ffffff";
   ctx.font = font(60, 700);
-  ctx.fillText("漢森進階 18 週課表", W / 2, 116);
+  ctx.fillText(`漢森${plan.levelLabel} 18 週課表`, W / 2, 116);
 
   ctx.fillStyle = "#e8a33d";
   ctx.font = font(46, 700);

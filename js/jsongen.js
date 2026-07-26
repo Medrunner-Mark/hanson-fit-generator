@@ -103,7 +103,7 @@ export function buildWorkoutJson(workout, tier, plan) {
 
   return {
     workoutName: workoutName(workout, tier, plan),
-    description: `漢森進階${plan.label}課表產生器（目標 ${tier.goal}）｜Med日跑者`,
+    description: `漢森${plan.levelLabel}${plan.label}課表產生器（目標 ${tier.goal}）｜Med日跑者`,
     sportType: SPORT,
     workoutSegments: [
       { segmentOrder: 1, sportType: SPORT, workoutSteps: steps },

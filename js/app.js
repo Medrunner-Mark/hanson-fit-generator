@@ -179,8 +179,6 @@ const LEVEL_HINTS = {
 
 function switchPlan() {
   levelHint.textContent = LEVEL_HINTS[currentLevel];
-  // 初階版目前沒有 Excel 互動模板，隱藏該按鈕
-  document.getElementById("xlsx-btn").style.display = currentPlan().xlsxFile ? "" : "none";
   populateGoals();
   renderAll();
 }
