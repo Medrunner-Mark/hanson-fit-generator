@@ -155,7 +155,9 @@ button.dl-btn {
   font-weight: 700;
 }
 
-button.dl-btn span { margin-right: 6px; font-weight: 400; }
+/* 只針對開頭的 ⬇ 箭頭；按鈕文字現在包在第二個 span 裡（多語系用），
+   若沿用 `span` 選擇器會讓文字也被套上右邊距並變成非粗體。 */
+button.dl-btn > span:first-child { margin-right: 6px; font-weight: 400; }
 
 button.dl-btn:hover { background: #3a7bc0; }
 
@@ -168,7 +170,7 @@ button.dl-btn-green {
   padding: 10px 18px;
 }
 
-button.dl-btn-green span { margin-right: 6px; font-weight: 400; }
+button.dl-btn-green > span:first-child { margin-right: 6px; font-weight: 400; }
 
 button.dl-btn-green:hover { background: #25543e; }
 

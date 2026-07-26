@@ -5,7 +5,10 @@
 //
 // 註：原xlsx第18週週六標示「5k Easy」但里程欄誤植為10，此處依課表內容取5K。
 
-export const DAY_HEADERS = ["一", "二", "三", "四", "五", "六", "日"];
+import { t } from "./i18n.js";
+
+// 星期表頭。做成函式而非常數陣列：切換語言後必須重新取值。
+export const dayHeaders = () => [0, 1, 2, 3, 4, 5, 6].map(i => t(`day.${i}`));
 
 // 課表類型的單一資料來源：網頁、課表圖、PDF 三邊共用。
 //   name  = 圖例用全名
@@ -13,46 +16,40 @@ export const DAY_HEADERS = ["一", "二", "三", "四", "五", "六", "日"];
 //   cls   = 網頁 CSS class（色票在 style.css）
 //   poster / pdf = 兩張畫布各自的色票。刻意分開不合併：課表圖是深色底、
 //                  PDF 是白底列印用，同一個類型在兩邊的底色本來就不同。
+// name/short 用 getter 而非固定字串：語言一切換就必須反映，任何被快取住的
+// 譯文都會變成殘留的舊語言文字。用 getter 的話這件事在結構上就不可能發生。
+const typeInfo = (key, cls, poster, pdf) => ({
+  get name() { return t(`type.${key}.name`); },
+  get short() { return t(`type.${key}.short`); },
+  cls, poster, pdf,
+});
+
 export const TYPE_INFO = {
-  easy: {
-    name: "輕鬆有氧", short: "輕鬆", cls: "t-easy",
-    poster: { bg: "#9CC2E5", fg: "#12354f" },
-    pdf:    { bg: "#dceaf6", fg: "#14364f", bar: "#9CC2E5" },
-  },
-  speed: {
-    name: "速度跑", short: "速度", cls: "t-speed",
-    poster: { bg: "#FF9999", fg: "#6d1a1a" },
-    pdf:    { bg: "#ffe2e2", fg: "#6d1a1a", bar: "#FF9999" },
-  },
-  tempo: {
-    name: "節奏跑", short: "節奏", cls: "t-tempo",
-    poster: { bg: "#FFC000", fg: "#553e00" },
-    pdf:    { bg: "#fff0cc", fg: "#553e00", bar: "#FFC000" },
-  },
-  strength: {
-    name: "強化跑", short: "強化", cls: "t-strength",
-    poster: { bg: "#C5E0B3", fg: "#2f4d1c" },
-    pdf:    { bg: "#e4f1dc", fg: "#2f4d1c", bar: "#C5E0B3" },
-  },
-  long: {
-    name: "長跑", short: "長跑", cls: "t-long",
-    poster: { bg: "#0070C0", fg: "#ffffff" },
-    // PDF 底色刻意比輕鬆跑（#dceaf6）深一階：兩者明度差約 11%，黑白雷射列印也分得出來。
-    // 不改成別的色相是因為色相不同但明度相近的兩塊，轉灰階後會變成差不多的灰。
-    pdf:    { bg: "#a9cfee", fg: "#0b3d63", bar: "#0070C0" },
-  },
-  rest: {
-    name: "休息日", short: "休息", cls: "t-rest",
-    poster: { bg: "#6f6f6f", fg: "#ededed" },
-    pdf:    { bg: "#f0f1f2", fg: "#7c848c", bar: "#B7BDC3" },
-  },
-  race: {
-    name: "比賽日", short: "比賽", cls: "t-race",
-    poster: { bg: "#e8a33d", fg: "#42270a" },
-    // 比賽日是整份課表的終點，用深琥珀底＋白字讓它一眼跳出來。
-    // #a85607 對白字的對比約 5.2:1，過 WCAG AA；灰階列印時也是全表最深的一格。
-    pdf:    { bg: "#a85607", fg: "#ffffff", bar: "#ffd9a0" },
-  },
+  easy: typeInfo("easy", "t-easy",
+    { bg: "#9CC2E5", fg: "#12354f" },
+    { bg: "#dceaf6", fg: "#14364f", bar: "#9CC2E5" }),
+  speed: typeInfo("speed", "t-speed",
+    { bg: "#FF9999", fg: "#6d1a1a" },
+    { bg: "#ffe2e2", fg: "#6d1a1a", bar: "#FF9999" }),
+  tempo: typeInfo("tempo", "t-tempo",
+    { bg: "#FFC000", fg: "#553e00" },
+    { bg: "#fff0cc", fg: "#553e00", bar: "#FFC000" }),
+  strength: typeInfo("strength", "t-strength",
+    { bg: "#C5E0B3", fg: "#2f4d1c" },
+    { bg: "#e4f1dc", fg: "#2f4d1c", bar: "#C5E0B3" }),
+  // 長跑的 PDF 底色刻意比輕鬆跑（#dceaf6）深一階：兩者明度差約 11%，黑白雷射列印
+  // 也分得出來。不改成別的色相是因為色相不同但明度相近的兩塊，轉灰階後會變成差不多的灰。
+  long: typeInfo("long", "t-long",
+    { bg: "#0070C0", fg: "#ffffff" },
+    { bg: "#a9cfee", fg: "#0b3d63", bar: "#0070C0" }),
+  rest: typeInfo("rest", "t-rest",
+    { bg: "#6f6f6f", fg: "#ededed" },
+    { bg: "#f0f1f2", fg: "#7c848c", bar: "#B7BDC3" }),
+  // 比賽日是整份課表的終點，用深琥珀底＋白字讓它一眼跳出來。
+  // #a85607 對白字的對比約 5.2:1，過 WCAG AA；灰階列印時也是全表最深的一格。
+  race: typeInfo("race", "t-race",
+    { bg: "#e8a33d", fg: "#42270a" },
+    { bg: "#a85607", fg: "#ffffff", bar: "#ffd9a0" }),
 };
 
 const e = d => ({ t: "easy", d, label: `${d}K` });

@@ -4,6 +4,7 @@
 
 import { fmtPace } from "./paces.js";
 import { ID_PREFIX } from "./workout-meta.js";
+import { t } from "./i18n.js";
 
 // 行事曆的一天 → 課表模板。依既有 id 命名規則對應。
 // 非課表類型的日子（輕鬆跑/休息/比賽）沒有對應前綴，直接回 null。
@@ -26,11 +27,21 @@ function mainPace(step, tier) {
 }
 
 // 產生一天的完整敘述。day 來自 schedule，plan/tier 決定配速。
+// 行事曆格內／PDF 用的當日標籤。多數是純數字（10K、12x400）不需翻譯；
+// 只有帶 tag 的例外要查字典（目前僅進階半馬 W18 週六的「5K放鬆」）。
+export function dayLabel(day) {
+  return day.tag ? t(`day.label.${day.tag}`, { d: day.d }) : day.label;
+}
+
 export function describeDay(plan, day, tier) {
-  if (day.t === "rest") return "休息 / 交叉訓練";
-  if (day.t === "race") return `比賽日 ${day.d}K`;
+  if (day.t === "rest") return t("desc.rest");
+  if (day.t === "race") return t("desc.race", { d: day.d });
   if (day.t === "easy") {
-    return `${day.label} 輕鬆跑 @${fmtPace(tier.easyA)}–${fmtPace(tier.easyB)}`;
+    return t("desc.easy", {
+      label: dayLabel(day),
+      from: fmtPace(tier.easyA),
+      to: fmtPace(tier.easyB),
+    });
   }
 
   const w = resolveWorkout(plan, day);
@@ -44,21 +55,23 @@ export function describeDay(plan, day, tier) {
     else if (s.kind === "jog") jogStep = s;
   }
 
-  const hasWu = w.steps.some(s => s.kind === "wu");
-  const hasCd = w.steps.some(s => s.kind === "cd");
-  if (hasWu) parts.push("2K暖身");
+  // 距離讀 step.dist 而不是寫死「2K」：目前所有模板的暖身/收操都是 2000m，
+  // 但寫死的話模板一改就會靜默說謊。
+  const wuStep = w.steps.find(s => s.kind === "wu");
+  const cdStep = w.steps.find(s => s.kind === "cd");
+  if (wuStep) parts.push(t("desc.wu", { d: dist(wuStep.dist) }));
 
   if (mainStep) {
     const pace = mainPace(mainStep, tier);
     if (repeatTimes) {
       // 不用括號，避免換行時括號單獨落在行首
-      const jog = jogStep ? `，組間緩跑${dist(jogStep.dist)}` : "";
-      parts.push(`${repeatTimes}×${dist(mainStep.dist)} @${pace}${jog}`);
+      const jog = jogStep ? t("desc.jogSep", { d: dist(jogStep.dist) }) : "";
+      parts.push(t("desc.reps", { n: repeatTimes, dist: dist(mainStep.dist), pace, jog }));
     } else {
-      parts.push(`${dist(mainStep.dist)} @${pace}`);
+      parts.push(t("desc.single", { dist: dist(mainStep.dist), pace }));
     }
   }
 
-  if (hasCd) parts.push("2K收操");
-  return parts.join(" → ");
+  if (cdStep) parts.push(t("desc.cd", { d: dist(cdStep.dist) }));
+  return parts.join(t("desc.arrow"));
 }

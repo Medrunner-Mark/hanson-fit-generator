@@ -6,6 +6,8 @@
 //
 // 已驗證：72 份課表中 71 份完全符合這個規則，唯一例外是 prog_90min（見 NAME_OVERRIDE）。
 
+import { t } from "./i18n.js";
+
 // 類型 → id 前綴。describe.js 的 resolveWorkout 需要這個方向。
 export const ID_PREFIX = {
   speed: "speed_",
@@ -15,18 +17,8 @@ export const ID_PREFIX = {
   alt: "prog_",
 };
 
-const CATEGORY = {
-  speed: "速度跑",
-  strength: "強化跑",
-  tempo: "節奏跑",
-  long: "長跑",
-  alt: "替代課表",
-};
-
-// 名稱不是「類型＋規格」組合的少數課表，在這裡個別指定
-const NAME_OVERRIDE = {
-  prog_90min: "90min出國漸速跑",
-};
+// 名稱不是「類型＋規格」組合的少數課表，在字典裡個別指定 wk.name.<id>
+const NAME_OVERRIDE = new Set(["prog_90min"]);
 
 const TYPE_BY_PREFIX = Object.entries(ID_PREFIX).map(([type, p]) => [p, type]);
 
@@ -36,7 +28,8 @@ export function workoutType(w) {
 }
 
 export function workoutCategory(w) {
-  return CATEGORY[workoutType(w)] ?? "";
+  const type = workoutType(w);
+  return type ? t(`wk.cat.${type}`) : "";
 }
 
 // 規格字串，語言中性：speed_12x400 → "12x400"、long_26k → "26K"
@@ -48,5 +41,7 @@ export function workoutSpec(w) {
 
 // 一定要是 function、不可預先算好存進資料裡：多語系切換語言時不能有任何快取的翻譯字串。
 export function workoutLabel(w) {
-  return NAME_OVERRIDE[w.id] ?? workoutCategory(w) + workoutSpec(w);
+  if (NAME_OVERRIDE.has(w.id)) return t(`wk.name.${w.id}`);
+  // 分隔方式交給字典：中日文是「{cat}{spec}」，英文要「{cat}-{spec}」
+  return t("wk.label", { cat: workoutCategory(w), spec: workoutSpec(w) });
 }

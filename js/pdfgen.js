@@ -6,11 +6,13 @@
 // 輸出 300dpi，繪製程式碼不必知道這件事。輸出用 PNG 而非 JPEG——整頁都是文字與
 // 純色塊，JPEG 的 DCT 會在文字邊緣產生振鈴雜訊（就是「糊掉」的來源）。
 
-import { fmtPace, goalCode } from "./paces.js";
-import { TYPE_INFO, DAY_HEADERS } from "./schedule.js";
+import { fmtPace } from "./paces.js";
+import { TYPE_INFO, dayHeaders } from "./schedule.js";
 import { describeDay } from "./describe.js";
 import { font, roundRect } from "./canvas-util.js";
 import { shortDate } from "./dates.js";
+import { cardLabelShort, fileStem } from "./plans.js";
+import { t } from "./i18n.js";
 
 // A4 直式 @150dpi 的邏輯座標
 const W = 1240, H = 1754;
@@ -149,11 +151,11 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
   ctx.textAlign = "left";
   ctx.fillStyle = INK;
   ctx.font = font(34, 700);
-  ctx.fillText(`漢森${plan.levelLabel}${plan.label}課表 18 週`, MX, y);
+  ctx.fillText(t("pdf.title", { level: plan.levelLabel, dist: plan.label }), MX, y);
 
   // 目標時間：琥珀色徽章，讓人一翻開就看到自己在追什麼。
   // 徽章必須塞進既有的頁首高度——把頁首撐高會壓縮 rowH，連帶讓自動字級掉一級。
-  const goalTxt = `目標 ${tier.goal}`;
+  const goalTxt = t("pdf.goal", { goal: tier.goal });
   ctx.font = font(34, 700);
   const gpad = 20, gh = 46;
   const gw = ctx.measureText(goalTxt).width + gpad * 2;
@@ -182,7 +184,7 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
       ctx.textAlign = "center";
       ctx.fillStyle = MUTED;
       ctx.font = font(17, 500);
-      ctx.fillText(card.label.replace(/\s*\(.*\)/, ""), x + cw / 2, y + 25);
+      ctx.fillText(cardLabelShort(card), x + cw / 2, y + 25);
       ctx.fillStyle = INK;
       ctx.font = font(24, 700);
       ctx.fillText(fmtPace(tier[card.key] + (card.offsetSec || 0)), x + cw / 2, y + 53);
@@ -199,9 +201,9 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
   ctx.fillStyle = "#e8eff5";
   ctx.font = font(20, 700);
   ctx.textAlign = "center";
-  ctx.fillText("週", MX + wkW / 2, y + 24);
-  DAY_HEADERS.forEach((d, i) => ctx.fillText(d, MX + wkW + dayW * (i + 0.5), y + 24));
-  ctx.fillText("週跑量", MX + wkW + dayW * 7 + volW / 2, y + 24);
+  ctx.fillText(t("pdf.week"), MX + wkW / 2, y + 24);
+  dayHeaders().forEach((d, i) => ctx.fillText(d, MX + wkW + dayW * (i + 0.5), y + 24));
+  ctx.fillText(t("pdf.volume"), MX + wkW + dayW * 7 + volW / 2, y + 24);
   const top = y + headH;
 
   const start = pageIdx * WEEKS_PER_PAGE;
@@ -289,11 +291,11 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE, dates = nul
   ctx.textAlign = "left";
   ctx.fillStyle = MUTED;
   ctx.font = font(17, 400);
-  ctx.fillText("配速依據《漢森馬拉松訓練法》｜暖身、收操與組間緩跑請用恢復跑配速", MX, fy);
+  ctx.fillText(t("pdf.footNote"), MX, fy);
   ctx.textAlign = "right";
   ctx.fillStyle = INK;
   ctx.font = font(17, 700);
-  ctx.fillText(`Med日跑者　medrunner-mark.github.io/hanson-fit-generator　${pageIdx + 1}/${pages}`, W - MX, fy);
+  ctx.fillText(t("pdf.brandLine", { page: pageIdx + 1, pages }), W - MX, fy);
 
   return canvas;
 }
@@ -323,12 +325,12 @@ export function downloadPdf(plan, tier, dates = null) {
       canvas.width = canvas.height = 0;   // 立刻釋放，不要同時持有兩頁
       if (url && url.length > 100) break;
     }
-    if (!url || url.length <= 100) throw new Error("畫布過大，無法產生 PDF");
+    if (!url || url.length <= 100) throw new Error(t("ui.err.canvasTooBig"));
     if (p > 0) pdf.addPage();
     // 第 8 個參數 compression 一定要給：jsPDF 預設 "NONE" 會把 PNG 解成未壓縮點陣
     // 塞進 PDF（本檔會變成 66MB）。實測 FAST 的檔案最小也最快，MEDIUM 反而較大。
     pdf.addImage(url, "PNG", 0, 0, 210, 297, undefined, "FAST");
   }
 
-  pdf.save(`${plan.namePrefix}sub${goalCode(tier.goal)}_18週課表.pdf`);
+  pdf.save(`${fileStem(plan, tier)}_${t("file.plan18w")}.pdf`);
 }

@@ -2,8 +2,10 @@
 // 使用 Garmin 官方 JS SDK（瀏覽器端執行，不經任何伺服器）。
 
 import { Encoder, Profile } from "https://esm.sh/@garmin/fitsdk@21.171.0";
-import { fmtPace, paceToScaledMps, goalCode } from "./paces.js";
+import { fmtPace, paceToScaledMps } from "./paces.js";
 import { workoutLabel } from "./workout-meta.js";
+import { fileStem } from "./plans.js";
+import { t } from "./i18n.js";
 
 // 各種 step 的配速區間（回傳 [慢端秒/km, 快端秒/km]）
 // export 供 jsongen.js 共用，確保 FIT 與 JSON 兩種格式的配速數字完全一致
@@ -26,33 +28,36 @@ export function paceRange(step, tier) {
   }
 }
 
+// 這些字串會寫進 FIT 與 JSON，運動中直接顯示在使用者的手錶螢幕上。
 export function stepNotes(step, tier) {
   switch (step.kind) {
-    case "wu": return "暖身 恢復跑配速";
-    case "cd": return "收操 恢復跑配速";
-    case "jog": return "組間恢復跑";
+    case "wu": return t("fit.wu");
+    case "cd": return t("fit.cd");
+    case "jog": return t("fit.jog");
     case "main":
       if (step.mpOffset !== undefined) {
         const label = step.mpOffset > 0 ? `MP+${step.mpOffset}s` : "MP";
-        return `${label} ${fmtPace(tier.tempo + step.mpOffset)}/km`;
+        return t("fit.mpOffset", { label, pace: fmtPace(tier.tempo + step.mpOffset) });
       }
-      if (step.paceKey === "tempo") return `馬拉松配速 ${fmtPace(tier.tempo)}/km`;
+      if (step.paceKey === "tempo") return t("fit.marathonPace", { pace: fmtPace(tier.tempo) });
       if (step.paceKey === "strength") {
-        const gap = tier.tempo - tier.strength;
-        return `MP-${gap}s ${fmtPace(tier.strength)}/km`;
+        return t("fit.strength", { gap: tier.tempo - tier.strength, pace: fmtPace(tier.strength) });
       }
       if (step.paceKey === "hmp") {
         if (step.offsetSec) {
-          const s = Math.abs(step.offsetSec);
-          return `HMP${step.offsetSec < 0 ? "-" : "+"}${s}s ${fmtPace(tier.hmp + step.offsetSec)}/km`;
+          return t("fit.hmpOffset", {
+            sign: step.offsetSec < 0 ? "-" : "+",
+            sec: Math.abs(step.offsetSec),
+            pace: fmtPace(tier.hmp + step.offsetSec),
+          });
         }
-        return `半馬配速 ${fmtPace(tier.hmp)}/km`;
+        return t("fit.halfPace", { pace: fmtPace(tier.hmp) });
       }
-      if (step.paceKey === "tenK") return `10K配速 ${fmtPace(tier.tenK)}/km`;
-      if (step.paceKey === "long") return `長跑配速 ${fmtPace(tier.long)}/km`;
+      if (step.paceKey === "tenK") return t("fit.tenK", { pace: fmtPace(tier.tenK) });
+      if (step.paceKey === "long") return t("fit.longPace", { pace: fmtPace(tier.long) });
       if (step.paceKey === "speed") {
         const lapSec = Math.round(tier.fiveK * 0.4); // 400m一圈，以配速表400m配速計
-        return `${fmtPace(tier.fiveK)}/km 每圈${lapSec}秒`;
+        return t("fit.speedLap", { pace: fmtPace(tier.fiveK), lap: lapSec });
       }
       return "";
     default: return "";
@@ -70,7 +75,7 @@ function intensityOf(step) {
 
 // 檔名用："漢森進階sub255_長跑26K"／"漢森進階半馬sub145_節奏跑10K"
 export function workoutFileName(workout, tier, plan) {
-  return `${plan.namePrefix}sub${goalCode(tier.goal)}_${workoutLabel(workout)}`;
+  return `${fileStem(plan, tier)}_${workoutLabel(workout)}`;
 }
 
 // 錶上與 Garmin Connect 顯示用的課表名稱。目前與檔名完全相同——刻意分成兩個函式是
@@ -122,7 +127,7 @@ export function buildWorkoutFit(workout, tier, plan) {
         targetType: "open",
         targetValue: 0,
         intensity: "cooldown",
-        notes: "收操",
+        notes: t("fit.openCd"),
       });
       return;
     }

@@ -5,6 +5,7 @@
 // 配速數字與 FIT 版共用同一套函式（fitgen.js 的 paceRange/stepNotes），保證兩種格式一致。
 
 import { paceRange, stepNotes, wktName } from "./fitgen.js";
+import { t } from "./i18n.js";
 import { paceToScaledMps } from "./paces.js";
 
 const SPORT = { sportTypeId: 1, sportTypeKey: "running" };
@@ -52,7 +53,7 @@ function execStep(step, tier, stepOrder, childStepId) {
   if (step.kind === "open_cd") {
     return {
       ...base,
-      description: "收操",
+      description: t("fit.openCd"),
       endCondition: { conditionTypeId: 1, conditionTypeKey: "lap.button" },
       endConditionValue: null,
       targetType: NO_TARGET,
@@ -103,7 +104,7 @@ export function buildWorkoutJson(workout, tier, plan) {
 
   return {
     workoutName: wktName(workout, tier, plan),
-    description: `漢森${plan.levelLabel}${plan.label}課表產生器（目標 ${tier.goal}）｜Med日跑者`,
+    description: t("fit.workoutDesc", { level: plan.levelLabel, dist: plan.label, goal: tier.goal }),
     sportType: SPORT,
     workoutSegments: [
       { segmentOrder: 1, sportType: SPORT, workoutSteps: steps },
