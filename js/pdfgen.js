@@ -6,9 +6,10 @@
 // 輸出 300dpi，繪製程式碼不必知道這件事。輸出用 PNG 而非 JPEG——整頁都是文字與
 // 純色塊，JPEG 的 DCT 會在文字邊緣產生振鈴雜訊（就是「糊掉」的來源）。
 
-import { fmtPace } from "./paces.js";
+import { fmtPace, goalCode } from "./paces.js";
 import { TYPE_INFO, DAY_HEADERS } from "./schedule.js";
 import { describeDay } from "./describe.js";
+import { font, roundRect } from "./canvas-util.js";
 
 // A4 直式 @150dpi 的邏輯座標
 const W = 1240, H = 1754;
@@ -19,34 +20,7 @@ const SCALE = 2;               // 150dpi × 2 = 300dpi（列印標準）
 // 日期格文字自動字級的搜尋範圍：由大而小，取「全文件每一格都塞得下」的最大值
 const BODY_MAX = 22, BODY_MIN = 12;
 
-const COLOR = {
-  easy:     { bg: "#dceaf6", fg: "#14364f", bar: "#9CC2E5" },
-  speed:    { bg: "#ffe2e2", fg: "#6d1a1a", bar: "#FF9999" },
-  tempo:    { bg: "#fff0cc", fg: "#553e00", bar: "#FFC000" },
-  strength: { bg: "#e4f1dc", fg: "#2f4d1c", bar: "#C5E0B3" },
-  long:     { bg: "#d3e7f7", fg: "#0b3d63", bar: "#0070C0" },
-  rest:     { bg: "#f0f1f2", fg: "#7c848c", bar: "#B7BDC3" },
-  race:     { bg: "#fbe3c2", fg: "#5b3708", bar: "#e8a33d" },
-};
-
 const INK = "#16304a", MUTED = "#6b7c8c", LINE = "#d8e0e8";
-
-function font(size, weight = 400) {
-  return `${weight} ${size}px "Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif`;
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
-  else {
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  }
-}
 
 // 混合中英文的斷行：英數字與 3:45 這類 token 不切開，中文可逐字斷。
 // 單一 token 本身就超過行寬時逐字硬斷——沒有這道保險，長英文字會靜默溢出格子。
@@ -204,7 +178,7 @@ function drawPage(plan, tier, pageIdx, { body, pages, scale = SCALE }) {
 
     // 七天
     week.forEach((day, di) => {
-      const c = COLOR[day.t];
+      const c = TYPE_INFO[day.t].pdf;
       const x = MX + wkW + dayW * di;
       ctx.fillStyle = c.bg;
       roundRect(ctx, x + 2, ry + 2, dayW - 4, rowH - 4, 5); ctx.fill();
@@ -291,5 +265,5 @@ export function downloadPdf(plan, tier) {
     pdf.addImage(url, "PNG", 0, 0, 210, 297, undefined, "FAST");
   }
 
-  pdf.save(`${plan.namePrefix}sub${tier.goal.replace(":", "")}_18週課表.pdf`);
+  pdf.save(`${plan.namePrefix}sub${goalCode(tier.goal)}_18週課表.pdf`);
 }

@@ -3,35 +3,8 @@
 // 加大字級、深色底、色塊對比提高，縮圖在手機上也看得清楚。
 
 import { fmtPace } from "./paces.js";
-
-const TYPE = {
-  easy:     { name: "輕鬆", bg: "#9CC2E5", fg: "#12354f" },
-  speed:    { name: "速度", bg: "#FF9999", fg: "#6d1a1a" },
-  tempo:    { name: "節奏", bg: "#FFC000", fg: "#553e00" },
-  strength: { name: "強化", bg: "#C5E0B3", fg: "#2f4d1c" },
-  long:     { name: "長跑", bg: "#0070C0", fg: "#ffffff" },
-  rest:     { name: "休息", bg: "#6f6f6f", fg: "#ededed" },
-  race:     { name: "比賽", bg: "#e8a33d", fg: "#42270a" },
-};
-
-const DAYS = ["一", "二", "三", "四", "五", "六", "日"];
-
-function font(size, weight = 400) {
-  return `${weight} ${size}px "Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif`;
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
-  else {
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  }
-}
+import { TYPE_INFO, DAY_HEADERS } from "./schedule.js";
+import { font, roundRect } from "./canvas-util.js";
 
 export function buildPoster(plan, tier) {
   const W = 1080, H = 1920;
@@ -95,7 +68,7 @@ export function buildPoster(plan, tier) {
   ctx.font = font(26, 700);
   ctx.textAlign = "center";
   ctx.fillText("週", tableX + wkColW / 2, headerY + 34);
-  DAYS.forEach((d, i) => {
+  DAY_HEADERS.forEach((d, i) => {
     ctx.fillText(d, tableX + wkColW + dayColW * (i + 0.5), headerY + 34);
   });
   ctx.fillText("週跑量", tableX + wkColW + dayColW * 7 + totColW / 2, headerY + 34);
@@ -112,21 +85,22 @@ export function buildPoster(plan, tier) {
 
     // 七天
     week.forEach((day, di) => {
-      const t = TYPE[day.t];
+      const info = TYPE_INFO[day.t];
+      const c = info.poster;
       const x = tableX + wkColW + dayColW * di;
-      ctx.fillStyle = t.bg;
+      ctx.fillStyle = c.bg;
       roundRect(ctx, x + 3, y + 3, dayColW - 6, rowH - 6, 8);
       ctx.fill();
 
-      ctx.fillStyle = t.fg;
+      ctx.fillStyle = c.fg;
       if (day.t === "rest") {
         ctx.font = font(26, 700);
-        ctx.fillText(t.name, x + dayColW / 2, y + rowH / 2 + 10);
+        ctx.fillText(info.short, x + dayColW / 2, y + rowH / 2 + 10);
       } else {
         ctx.font = font(23, 700);
-        ctx.fillText(t.name, x + dayColW / 2, y + rowH / 2 - 2);
+        ctx.fillText(info.short, x + dayColW / 2, y + rowH / 2 - 2);
         ctx.font = font(20, 500);
-        const lbl = day.t === "race" ? day.label.replace(/^.*\s/, "") : day.label;
+        const lbl = day.t === "race" ? `${day.d}K` : day.label;
         ctx.fillText(lbl, x + dayColW / 2, y + rowH / 2 + 24);
       }
     });

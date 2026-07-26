@@ -1,4 +1,4 @@
-import { fmtPace } from "./paces.js";
+import { fmtPace, goalCode } from "./paces.js";
 import { buildWorkoutFit, workoutName } from "./fitgen.js";
 import { workoutJsonText } from "./jsongen.js";
 import { DAY_HEADERS, TYPE_INFO } from "./schedule.js";
@@ -134,7 +134,7 @@ async function downloadZip(kind) {
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `${plan.namePrefix}sub${t.goal.replace(":", "")}_全套課表_${kind.toUpperCase()}.zip`;
+    a.download = `${plan.namePrefix}sub${goalCode(t.goal)}_全套課表_${kind.toUpperCase()}.zip`;
     a.click();
     URL.revokeObjectURL(a.href);
     statusEl.textContent = "";
@@ -155,8 +155,8 @@ function renderCalendar() {
     const total = week.reduce((sum, day) => sum + day.d, 0);
     const cells = week.map(day => {
       const info = TYPE_INFO[day.t];
-      // 比賽日 label 形如「全馬 42.2K」，格內只留距離避免溢出
-      const text = day.t === "race" ? day.label.split(" ").pop() : day.label;
+      // 比賽日格內只留距離避免溢出（label 形如「全馬 42.2K」，但不從字串切，直接用 day.d）
+      const text = day.t === "race" ? `${day.d}K` : day.label;
       const sub = day.t === "rest" ? "" : `<span class="cal-label">${text}</span>`;
       return `<td class="${info.cls}"><span class="cal-type">${info.short}</span>${sub}</td>`;
     }).join("");
@@ -244,7 +244,7 @@ document.getElementById("poster-btn").addEventListener("click", () => {
     buildPoster(plan, t).toBlob(blob => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `${plan.namePrefix}sub${t.goal.replace(":", "")}_18週課表.png`;
+      a.download = `${plan.namePrefix}sub${goalCode(t.goal)}_18週課表.png`;
       a.click();
       URL.revokeObjectURL(a.href);
       statusEl.textContent = "";

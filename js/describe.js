@@ -26,7 +26,7 @@ function mainPace(step, tier) {
 // 產生一天的完整敘述。day 來自 schedule，plan/tier 決定配速。
 export function describeDay(plan, day, tier) {
   if (day.t === "rest") return "休息 / 交叉訓練";
-  if (day.t === "race") return `比賽日 ${day.label.split(" ").pop()}`;
+  if (day.t === "race") return `比賽日 ${day.d}K`;
   if (day.t === "easy") {
     return `${day.label} 輕鬆跑 @${fmtPace(tier.easyA)}–${fmtPace(tier.easyB)}`;
   }
