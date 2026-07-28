@@ -277,7 +277,9 @@ document.getElementById("xlsx-btn").addEventListener("click", () => {
   trackDownload("xlsx");
   const a = document.createElement("a");
   a.href = plan.xlsxFile;
-  a.download = plan.xlsxName;
+  // 檔名依語言。中文沿用既有名稱（{legacy}）不變，英日文改標明是模板——
+  // 這份 Excel 不分目標時間，帶 sub400 會與內容不符。
+  a.download = `${t("file.xlsxName", { prefix: plan.namePrefix, legacy: plan.xlsxName.replace(/\.xlsx$/, "") })}.xlsx`;
   a.click();
 });
 

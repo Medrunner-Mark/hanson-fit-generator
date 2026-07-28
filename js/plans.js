@@ -19,6 +19,14 @@ import { goalCode } from "./paces.js";
 export const fileStem = (plan, tier) =>
   t("file.stem", { prefix: plan.namePrefix, goal: goalCode(tier.goal) });
 
+// 初階計畫的目標時間上限。初階的訓練量支撐不了太快的目標，讓人選到做不到的
+// 速度只會產出一份不可能達成的課表。兩張配速表都是由慢到快排序，所以「截到
+// 某個目標為止」就是 slice。
+const capAt = (table, fastestGoal) => {
+  const i = table.findIndex(row => row.goal === fastestGoal);
+  return i < 0 ? table : table.slice(0, i + 1);
+};
+
 // 配速卡：i18n key 存在 labelKey，取用時再查表。
 //   cardLabel(card)      → 卡片上的完整標籤，例如「節奏跑 (MP)」
 //   cardLabelShort(card) → 課表圖／PDF 的短標籤，例如「節奏跑」
@@ -64,19 +72,20 @@ export const PLANS = {
     "templates/hanson-full-marathon-template.xlsx", "漢森進階全馬課表模板_互動版.xlsx",
     "4:00", PACE_TABLE, WORKOUTS, SCHEDULE, FULL_PACE_CARDS),
 
+  // 初階全馬最快到 2:40（26 檔 → 20 檔）
   "marathon-beginner": plan(
     "marathon-beginner", "marathon", "beginner",
     "templates/hanson-full-marathon-beginner-template.xlsx", "漢森初階全馬課表模板_互動版.xlsx",
-    "4:00", PACE_TABLE, BEGINNER_FULL_WORKOUTS, BEGINNER_FULL_SCHEDULE, FULL_PACE_CARDS),
+    "4:00", capAt(PACE_TABLE, "2:40"), BEGINNER_FULL_WORKOUTS, BEGINNER_FULL_SCHEDULE, FULL_PACE_CARDS),
 
   "half-advanced": plan(
     "half-advanced", "half", "advanced",
     "templates/hanson-half-marathon-template.xlsx", "漢森進階半馬課表模板_互動版.xlsx",
     "1:45", HALF_PACE_TABLE, HALF_WORKOUTS, HALF_SCHEDULE, HALF_PACE_CARDS),
 
-  // 初階半馬的強化跑統一使用 10K 配速欄，與進階半馬一致
+  // 初階半馬的強化跑統一使用 10K 配速欄，與進階半馬一致；最快到 1:20（17 檔 → 15 檔）
   "half-beginner": plan(
     "half-beginner", "half", "beginner",
     "templates/hanson-half-marathon-beginner-template.xlsx", "漢森初階半馬課表模板_互動版.xlsx",
-    "1:45", HALF_PACE_TABLE, BEGINNER_HALF_WORKOUTS, BEGINNER_HALF_SCHEDULE, HALF_PACE_CARDS),
+    "1:45", capAt(HALF_PACE_TABLE, "1:20"), BEGINNER_HALF_WORKOUTS, BEGINNER_HALF_SCHEDULE, HALF_PACE_CARDS),
 };

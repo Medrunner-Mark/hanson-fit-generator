@@ -45,16 +45,16 @@ export const STRINGS = {
   "ui.level.advanced": { zh: "進階", en: "Advanced", ja: "上級" },
   "ui.level.beginner": { zh: "初階", en: "Beginner", ja: "初級" },
   "ui.levelHint.advanced": { zh: "進階版：第1週就有速度跑，起始跑量較高（約60K/週起），適合已有規律訓練基礎的跑者。",
-                             en: "Advanced: speed work from week 1 and a higher starting volume (about 60K/week). For runners who already train consistently.",
+                             en: "Advanced: speed workouts start from week 1 and followed by higher starting and training volume",
                              ja: "上級版：第1週からスピード練習があり、開始時の走行距離も多め（週60km前後から）。すでに継続して走り込んでいるランナー向けです。" },
   "ui.levelHint.beginner": { zh: "初階版：前5-6週為基礎期（全是輕鬆跑），之後才加入速度跑與節奏跑。",
                              en: "Beginner: the first 5–6 weeks are base building (all easy running); speed and tempo work start after that.",
                              ja: "初級版：最初の5〜6週間は土台づくり（すべてジョグ）。スピード練習とテンポ走はそのあとから始まります。" },
 
   "ui.goalLabel":    { zh: "目標完賽時間", en: "Goal finish time", ja: "目標タイム" },
-  "ui.btn.fitZip":   { zh: "FIT 全部下載（手錶接電腦用）", en: "Download all FIT (watch via USB)", ja: "FIT を一括ダウンロード（USB でウォッチへ）" },
-  "ui.btn.jsonZip":  { zh: "JSON 全部下載（Connect網頁版用）", en: "Download all JSON (for Connect web)", ja: "JSON を一括ダウンロード（Connect ウェブ版用）" },
-  "ui.btn.poster":   { zh: "下載課表圖（直式圖，適合發 IG）", en: "Download plan image (portrait, good for IG)", ja: "プラン画像をダウンロード（縦長・SNS 向け）" },
+  "ui.btn.fitZip":   { zh: "FIT 全部下載（手錶接電腦用）", en: "Download all FIT files (via USB)", ja: "FIT を一括ダウンロード（USB でウォッチへ）" },
+  "ui.btn.jsonZip":  { zh: "JSON 全部下載（Connect網頁版用）", en: "Download all JSON files (via Connect Web)", ja: "JSON を一括ダウンロード（Connect ウェブ版用）" },
+  "ui.btn.poster":   { zh: "下載課表圖（直式圖，適合發 IG）", en: "Download plan image (portrait, for IG)", ja: "プラン画像をダウンロード（縦長・SNS 向け）" },
   "ui.btn.pdf":      { zh: "PDF 課表（A4 可列印）", en: "PDF plan (A4, printable)", ja: "PDF プラン（A4・印刷用）" },
   "ui.btn.xlsx":     { zh: "Excel 互動模板（有詳細配速說明）", en: "Excel template (detailed pace notes)", ja: "Excel テンプレート（ペースの詳しい解説つき）" },
   "ui.tooltip.fit":  { zh: "下載 .fit（USB 匯入手錶）", en: "Download .fit (import to watch over USB)", ja: ".fit をダウンロード（USB でウォッチに取り込み）" },
@@ -87,10 +87,10 @@ export const STRINGS = {
   "ui.visitors":     { zh: "已有 {n} 人次造訪本工具，感謝你的支持 🙏", en: "{n} visits so far — thanks for the support 🙏", ja: "これまで {n} 回ご利用いただきました。ありがとうございます 🙏" },
 
   "ui.authorName":   { zh: "Med日跑者", en: "Med日跑者", ja: "Med日跑者" },
-  "ui.authorRole":   { zh: "住院醫師 × 每日跑者", en: "Resident physician × everyday runner", ja: "研修医 × 毎日ランナー" },
+  "ui.authorRole":   { zh: "住院醫師 × 每日跑者", en: "Resident Doctor x Runner", ja: "研修医 × ランナー" },
   "ui.authorBio":    { zh: "希望幫助更多跑者科學化訓練。歡迎在社群追蹤我的訓練與賽事紀錄。",
-                       en: "Helping more runners train with a bit more science behind it. Follow along for training and race reports.",
-                       ja: "より多くのランナーが科学的に練習できるように。トレーニングやレースの記録も発信しています。" },
+                       en: "Helping more runners train with science. Follow for training methods and race highlights.",
+                       ja: "より多くのランナーが科学的に練習できるように。トレーニングやレースの記録も投稿しています。" },
   "ui.social.yt":    { zh: "YouTube 頻道", en: "YouTube channel", ja: "YouTube チャンネル" },
   "ui.social.ig":    { zh: "Instagram", en: "Instagram", ja: "Instagram" },
   "ui.footer.credit": { zh: "課表結構與配速依據《漢森馬拉松訓練法》｜工具由 Med日跑者 製作",
@@ -207,6 +207,12 @@ export const STRINGS = {
   "file.prefix.half-beginner":     { zh: "漢森初階半馬", en: "Hansons-Beg-Half", ja: "ハンソンズ初級ハーフ" },
   "file.allWorkouts": { zh: "全套課表", en: "All-Workouts", ja: "全メニュー" },
   "file.plan18w":     { zh: "18週課表", en: "18-Week-Plan", ja: "18週間プラン" },
+  // Excel 模板不分目標時間——四個計畫各只有一份靜態檔，使用者是進 Excel 裡自己選
+  // 目標，所以檔名刻意不帶 sub400（帶了會讓人以為這份只能用於 4 小時）。
+  // 中文沿用既有檔名（{legacy}）維持不變，英日文標明是可自行調整的模板。
+  "file.xlsxName":    { zh: "{legacy}",
+                        en: "{prefix}_Interactive-Template",
+                        ja: "{prefix}_インタラクティブテンプレート" },
 
   // ── FIT／JSON 步驟備註（運動中顯示在手錶螢幕上，要短）──
   "fit.wu":            { zh: "暖身 恢復跑配速", en: "Warm-up @ recovery pace", ja: "アップ リカバリーペース" },

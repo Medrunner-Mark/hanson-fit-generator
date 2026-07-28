@@ -64,12 +64,20 @@ h2 {
   align-items: center;
 }
 
-/* 語言切換器：卡片右上角、自成一列。與標題同列會把副標可用寬度從 664px
-   壓到約 424px，副標會從兩行變三行。 */
-.lang-bar { display: flex; justify-content: flex-end; }
-/* .plan-switch 自帶 margin-top:18px，不歸零會把整張卡片的內容往下推 */
-.lang-bar .plan-switch { margin-top: 0; }
-.lang-switch button { padding: 8px 16px; font-size: 15px; }
+/* 語言切換器與 h1 同一列、靠卡片右上角。副標刻意留在這一列之外，
+   才能維持 664px 滿寬——放進同一列會被壓到約 424px、從兩行變三行。 */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+/* 必須寫成 .plan-switch.lang-switch：單用 .lang-switch 與下方的 .plan-switch
+   特異性相同，而 .plan-switch 排在後面會贏——margin-top:18px 不會歸零（切換器
+   被推得比標題低），font-size 也吃不到，等於整組樣式靜默失效。 */
+.plan-switch.lang-switch { margin-top: 0; }
+.plan-switch.lang-switch button { padding: 6px 12px; font-size: 13px; }
 
 .plan-switch {
   display: inline-flex;
