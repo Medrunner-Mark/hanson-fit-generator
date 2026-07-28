@@ -45,7 +45,7 @@ export const STRINGS = {
   "ui.level.advanced": { zh: "進階", en: "Advanced", ja: "上級" },
   "ui.level.beginner": { zh: "初階", en: "Beginner", ja: "初級" },
   "ui.levelHint.advanced": { zh: "進階版：第1週就有速度跑，起始跑量較高（約60K/週起），適合已有規律訓練基礎的跑者。",
-                             en: "Advanced: speed workouts start from week 1 and followed by higher starting and training volume",
+                             en: "Advanced: speed workouts start from week 1 and is followed by higher starting and training volume",
                              ja: "上級版：第1週からスピード練習があり、開始時の走行距離も多め（週60km前後から）。すでに継続して走り込んでいるランナー向けです。" },
   "ui.levelHint.beginner": { zh: "初階版：前5-6週為基礎期（全是輕鬆跑），之後才加入速度跑與節奏跑。",
                              en: "Beginner: the first 5–6 weeks are base building (all easy running); speed and tempo work start after that.",
