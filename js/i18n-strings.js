@@ -100,6 +100,70 @@ export const STRINGS = {
                         en: 'Paces reference — with thanks to the official Hansons method and the <a href="{urlLHR}" target="_blank" rel="noopener">Luke Humphrey Running</a> calculator.',
                         ja: 'ペースの算出にあたり、ハンソンズ公式メソッドと <a href="{urlLHR}" target="_blank" rel="noopener">Luke Humphrey Running</a> の公式計算機を参考にしました。' },
 
+  // ── 改版新增的介面文案 ─────────────────────────────────
+  // nx = 2026 改版新增的區塊（首屏、統計、匯入分頁、行事曆互動）。
+  // 沿用 nx. 前綴是為了讓「哪些字是改版帶進來的」在字典裡一眼可分。
+  "nx.eyebrow":      { zh: "漢森馬拉松訓練法 · 18 週", en: "Hansons Method · 18 weeks", ja: "ハンソンズ方式 · 18週" },
+  "nx.h1":           { zh: "選好目標時間，帶走整套課表",
+                       en: "Pick your goal time, take the whole plan",
+                       ja: "目標タイムを選んで、プランをまるごと" },
+  "nx.heroSub":      { zh: "距離、程度、目標完賽時間，三個選擇就能產生可匯入 Garmin 手錶的 18 週訓練課表。",
+                       en: "Distance, level, goal time — three picks and your 18-week Garmin-ready plan is done.",
+                       ja: "距離・レベル・目標タイムの3つを選ぶだけで、Garmin に取り込める18週間のプランができます。" },
+  "nx.dist":         { zh: "距離", en: "Distance", ja: "距離" },
+  "nx.level":        { zh: "程度", en: "Level", ja: "レベル" },
+
+  "nx.yourPlan":     { zh: "你的這份課表", en: "Your plan", ja: "あなたのプラン" },
+  "nx.stat.total":   { zh: "總里程", en: "Total", ja: "総距離" },
+  "nx.stat.peak":    { zh: "最高週跑量", en: "Peak week", ja: "最大週間" },
+  // 這一格數的是「有課表的訓練日數」（扣掉休息日與比賽日），不是課表檔案份數。
+  // 原設計稿寫「課表總數」，但實際數出來是 90 幾，會被誤讀成下面清單裡的檔案數量。
+  "nx.stat.days":    { zh: "訓練日數", en: "Sessions", ja: "練習日数" },
+  "nx.stat.weeks":   { zh: "訓練週數", en: "Weeks", ja: "週数" },
+  // 英文的單位留空：標籤已經是 Sessions／Weeks，再加 w 會變成「18w Weeks」
+  "nx.unit.days":    { zh: "天", en: "", ja: "日" },
+  "nx.unit.weeks":   { zh: "週", en: "", ja: "週" },
+
+  "nx.whichFile":    { zh: '不知道要下載 FIT 檔還是 JSON 檔？<a href="#import">看這裡</a>',
+                       en: 'Not sure whether you need FIT or JSON? <a href="#import">See the difference</a>',
+                       ja: 'FIT と JSON、どちらを選べばいい？<a href="#import">こちらで確認</a>' },
+  "nx.h2.import":    { zh: "下載完，怎麼進手錶？", en: "Getting the plan onto your watch", ja: "ウォッチへの取り込み方" },
+  "nx.importSub":    { zh: "兩條路，挑一條就好", en: "Two routes — pick one", ja: "2つの方法、どちらか一方で OK" },
+  "nx.tab.fit":      { zh: "要接電腦，使用 FIT 檔", en: "With a computer — use FIT files", ja: "パソコンにつなぐ：FIT ファイル" },
+  "nx.tab.fitSub":   { zh: "要 USB 線，一次全部匯入", en: "Needs a cable, imports everything at once", ja: "ケーブル必要・一括で取り込み" },
+  "nx.tab.json":     { zh: "不接電腦，使用 JSON 檔配合 Garmin Connect",
+                       en: "No computer — JSON files via Garmin Connect",
+                       ja: "パソコン不要：JSON ファイルを Garmin Connect で" },
+  "nx.tab.jsonSub":  { zh: "裝瀏覽器外掛，一次一個檔案匯入", en: "Browser extension, one file at a time", ja: "拡張機能で1ファイルずつ" },
+  "nx.howtoFit3":    { zh: '拔線，手錶上到「訓練 → 訓練課表」就能看到匯入的課表。<span class="step-note">手錶上只是「有這份課表」；要把它排到哪一天，仍要在手機 App 或電腦的 Garmin Connect 行事曆上安排。</span>',
+                       en: 'Unplug — the plans appear under Training → Workouts on the watch.<span class="step-note">The watch only holds the workouts; scheduling them onto specific days still happens in the Garmin Connect app or on your computer.</span>',
+                       ja: 'ケーブルを抜き、ウォッチの「トレーニング → ワークアウト」を開けば取り込んだメニューが見られます。<span class="step-note">ウォッチにあるのはメニュー本体だけです。どの日に行うかの割り当ては、スマホアプリかパソコンの Garmin Connect カレンダーで行います。</span>' },
+
+  "nx.paceSub":      { zh: "目標 {g} 對應的每公里配速，直接寫進下載的課表裡。",
+                       en: "Paces for a {g} goal — written straight into the files you download.",
+                       ja: "目標 {g} のペース。ダウンロードするファイルにそのまま入ります。" },
+  "nx.calTap":       { zh: "👆 點任一格，看當天的完整課表與實際配速",
+                       en: "👆 Tap any day for the full workout and real paces",
+                       ja: "👆 どの日でもタップすると詳細とペースが見られます" },
+  "nx.week":         { zh: "第 {n} 週", en: "Week {n}", ja: "第{n}週" },
+  "nx.allGoals":     { zh: "看全部 {n} 個目標檔位", en: "Show all {n} goal times", ja: "{n} 段階の目標をすべて表示" },
+  "nx.hideGoals":    { zh: "收合目標檔位", en: "Hide goal times", ja: "目標一覧を閉じる" },
+  "nx.range":        { zh: "{a} — {b} 可選（每 5 分鐘一檔）", en: "{a} — {b} available (5-min steps)", ja: "{a} — {b}（5分刻み）" },
+  "nx.slower":       { zh: "調慢目標時間", en: "Slower goal time", ja: "目標タイムを遅くする" },
+  "nx.faster":       { zh: "調快目標時間", en: "Faster goal time", ja: "目標タイムを速くする" },
+
+  "nx.raceDateWhy":  { zh: "填了之後，網頁行事曆與 PDF 課表的每一天都會自動標上日期——以「第 18 週星期日＝比賽日」往前回推 125 天。不填就完全不顯示日期。",
+                       en: "Fill this in and every day gets a real date, on the calendar above and in the PDF — counted back 125 days from race day (week 18, Sunday). Leave it blank and no dates are shown.",
+                       ja: "入力すると、上のカレンダーと PDF の各日に日付が入ります（第18週の日曜＝レース当日から125日さかのぼって計算）。未入力なら日付は表示されません。" },
+  "nx.singleNote":   { zh: '這一區是<strong>一份一份單獨下載</strong>，想補某一份課表時才用得到。大多數人不需要——直接用上面的「FIT／JSON 全部下載」<a href="#dl">打包整套帶走</a>就好。',
+                       en: 'This section downloads workouts <strong>one file at a time</strong> — handy when you just need to re-grab one. Most people don\'t: <a href="#dl">take the whole set</a> with the FIT / JSON download-all above.',
+                       ja: 'ここは<strong>1本ずつの個別ダウンロード</strong>で、あとから1つだけ取り直すとき用です。通常は上の「FIT／JSON 一括ダウンロード」で<a href="#dl">まとめて取得</a>すれば十分です。' },
+  "nx.play":         { zh: "用漢森理論打造你的全馬課表｜點擊播放",
+                       en: "Build your marathon plan the Hansons way — tap to play",
+                       ja: "ハンソンズ式でフルマラソンのプランを作る｜タップで再生" },
+  "nx.theme":        { zh: "切換深色／淺色模式", en: "Toggle dark / light mode", ja: "ダーク／ライトモードを切り替え" },
+  "nx.closeDetail":  { zh: "關閉", en: "Close", ja: "閉じる" },
+
   // ── 說明段落 ───────────────────────────────────────────
   "hint.pace": {
     zh: [

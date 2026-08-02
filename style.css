@@ -1,464 +1,831 @@
+/* 漢森課表產生器 — 版面樣式
+   方案 A「精緻」：白卡片＋柔和陰影，沿用原本的海軍藍＋琥珀金品牌色。
+   顏色一律走 CSS 變數，深色模式只換變數值，不重寫任何元件規則。 */
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --navy: #152c3f;
-  --navy-deep: #0d1f2e;
-  --amber: #e8a33d;
-  --text: #1f2d3a;
-  --muted: #5b6b7a;
-  --bg: #f4f6f8;
-  --card: #ffffff;
-  --line: #e2e8ee;
+  --brand: #152c3f;
+  --brand-deep: #0d1f2e;
+  --accent: #e8a33d;
+  --on-brand: #ffffff;
+  --blue: #3f7fc4;
+  --blue-ink: #ffffff;
+  --green: #2f6b4f;
+
+  --bg: #eef2f6;
+  --surface: #ffffff;
+  --surface-2: #f5f8fa;
+  --bar-bg: rgba(255, 255, 255, .84);
+
+  --ink: #152430;
+  --ink-2: #57687a;
+  --ink-3: #8496a5;
+  --line: #dfe6ed;
+  --accent-ink: #9a5b06;
+  --link: #1f4f7a;
+  --link-h: #0d1f2e;
+
+  --r: 16px;
+  --r-sm: 10px;
+  --shadow: 0 1px 2px rgba(13, 31, 46, .04), 0 14px 30px -22px rgba(13, 31, 46, .45);
+
+  --cardpad: clamp(18px, 2.4vw, 28px);
+  --edge: clamp(14px, 3vw, 34px);
+  --secgap: clamp(38px, 5vw, 66px);
+
+  --sans: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --display: "Archivo", "Noto Sans TC", system-ui, sans-serif;
+
+  --pace-bg: #152c3f;
+  --pace-ink: #a8bbcb;
+  --pace-strong: #ffffff;
+  --pace-num: #e8a33d;
+
+  /* 手機底部固定列出現時，浮動元素要讓開；桌機為 0 */
+  --mbar-h: 0px;
 }
+
+/* 深色模式：只改變數。--brand 調亮一階，否則深底上的深藍色塊看不出邊界。 */
+html[data-t="dark"] {
+  color-scheme: dark;
+  --bg: #0f161c;
+  --surface: #18222b;
+  --surface-2: #1d2932;
+  --bar-bg: rgba(15, 22, 28, .86);
+  --ink: #e9eff5;
+  --ink-2: #9dadbb;
+  --ink-3: #7c8d9b;
+  --line: #28343f;
+  --accent-ink: #e8a33d;
+  --link: #8cc2ef;
+  --link-h: #e8a33d;
+  --brand: #24425c;
+  --pace-bg: #1d2c39;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+/* 網頁字型也依語言切換。ja/en 都保留中文字型當尾端後備（品牌字串「Med日跑者」含漢字）。 */
+html[lang="ja"] { --sans: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", Meiryo, "Noto Sans TC", system-ui, sans-serif; }
+html[lang="en"] { --sans: "Inter", "Segoe UI", "Helvetica Neue", Arial, "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif; }
 
 body {
-  font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+  font-family: var(--sans);
   background: var(--bg);
-  color: var(--text);
-  font-size: 17px;
-  line-height: 1.7;
-  padding: 24px 16px;
-}
-
-/* 網頁字型也依語言切換。body 本身不動，確保中文渲染與改前完全一致；
-   ja/en 都保留中文字型當尾端後備（品牌字串「Med日跑者」含漢字）。 */
-html[lang="ja"] body {
-  font-family: "Noto Sans JP", "Yu Gothic UI", "Yu Gothic", "Hiragino Sans", "Meiryo", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
-}
-html[lang="en"] body {
-  font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
-}
-
-.card {
-  max-width: 720px;
-  margin: 0 auto;
-  background: var(--card);
-  border-radius: 16px;
-  padding: 32px 28px;
-  box-shadow: 0 2px 12px rgba(13, 31, 46, 0.08);
-}
-
-header h1 {
-  font-size: 28px;
-  color: var(--navy);
-}
-
-.subtitle {
-  color: var(--muted);
+  color: var(--ink);
   font-size: 16px;
-  margin-top: 6px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+
+a { color: var(--link); text-decoration: none; border-bottom: 1px solid color-mix(in oklab, var(--link) 40%, transparent); }
+a:hover { color: var(--link-h); border-bottom-color: var(--link-h); }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ── 頂列 ────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--bar-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 9px var(--edge);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+
+.brand-mark {
+  width: 30px; height: 30px; flex: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #152c3f;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.brand-text { min-width: 0; display: flex; align-items: baseline; gap: 9px; }
+.brand-title { font-weight: 700; font-size: 18.5px; letter-spacing: -.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand-author { font-size: 12px; color: var(--ink-3); white-space: nowrap; flex: none; }
+
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; flex: none; }
+
+.icon-btn {
+  width: 34px; height: 34px; flex: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; line-height: 1;
+}
+.icon-btn:hover { background: var(--surface-2); }
+
+/* ── 分段切換器（語言／距離／程度共用）─────────────── */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.seg button {
+  border: 0;
+  background: transparent;
+  padding: 6px 11px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: inherit;
+}
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button:hover:not(.active) { background: var(--surface-2); }
+.seg button.active { background: var(--brand); color: var(--on-brand); }
+
+/* 距離／程度：撐滿欄寬、方角，與語言切換的膠囊樣式區隔 */
+.seg-wide { display: flex; width: 100%; border-radius: var(--r-sm); }
+.seg-wide button { flex: 1; padding: 11px 8px; font-size: 15px; text-align: center; }
+
+.lang-short { display: none; }
+
+/* ── 版心 ────────────────────────────────────────────── */
+.wrap {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 44px) var(--edge) calc(60px + var(--mbar-h));
+}
+
+.sec { margin-top: var(--secgap); }
+
+h1 {
+  margin: 8px 0 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(23px, 3.1vw, 36px);
+  line-height: 1.08;
+  letter-spacing: -.02em;
 }
 
 h2 {
-  font-size: 20px;
-  color: var(--navy);
-  margin: 28px 0 10px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
-}
-
-.switch-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-/* 語言切換器與 h1 同一列、靠卡片右上角。副標刻意留在這一列之外，
-   才能維持 664px 滿寬——放進同一列會被壓到約 424px、從兩行變三行。 */
-.header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-/* 必須寫成 .plan-switch.lang-switch：單用 .lang-switch 與下方的 .plan-switch
-   特異性相同，而 .plan-switch 排在後面會贏——margin-top:18px 不會歸零（切換器
-   被推得比標題低），font-size 也吃不到，等於整組樣式靜默失效。 */
-.plan-switch.lang-switch { margin-top: 0; }
-.plan-switch.lang-switch button { padding: 6px 12px; font-size: 13px; }
-
-.plan-switch {
-  display: inline-flex;
-  gap: 0;
-  margin-top: 18px;
-  border: 1px solid var(--navy);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.plan-switch button {
-  border: none;
-  border-radius: 0;
-  background: #fff;
-  color: var(--navy);
-  font-size: 16px;
+  margin: 0 0 4px;
+  font-family: var(--display);
   font-weight: 700;
-  padding: 10px 22px;
-  cursor: pointer;
+  font-size: clamp(21px, 2.8vw, 30px);
+  letter-spacing: -.015em;
 }
 
-.plan-switch button:not(:last-child) {
-  border-right: 1px solid var(--navy);
-}
-
-.plan-switch button.active {
-  background: var(--navy);
-  color: #fff;
-}
-
-.plan-switch button:hover:not(.active) {
-  background: #eef3f7;
-}
-
-/* 進階/初階版本說明：加粗加大，與上下區塊拉開距離 */
-.level-hint {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.6;
-  margin: 16px 0 22px;
-}
-
-.control {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-
-.control label {
-  font-size: 16px;
-  color: var(--muted);
-}
-
-select {
-  font-size: 20px;
+.eyebrow {
+  font-family: var(--display);
   font-weight: 700;
-  padding: 8px 14px;
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+.hero-sub { margin: 12px 0 0; color: var(--ink-2); font-size: clamp(15px, 1.5vw, 17px); }
+
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; margin-bottom: 16px; }
+.sec-sub { color: var(--ink-3); font-size: 14px; }
+.sec-sub-line { margin: 0 0 14px; color: var(--ink-3); font-size: 14px; }
+
+/* ── 卡片 ────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--navy);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: var(--cardpad);
 }
 
-button {
-  font-size: 16px;
-  padding: 8px 14px;
-  border: 1px solid var(--navy);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--navy);
-  cursor: pointer;
-}
+.card-flush { padding: 0; overflow: hidden; }
 
-button:hover { background: #eef3f7; }
-
-button.primary {
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  padding: 10px 18px;
-}
-
-button.primary:hover { background: var(--navy-deep); }
-
-.dl-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: stretch;
-}
-
-/* 下載按鈕：統一亮藍色，白字＋下載箭頭，一眼可辨識 */
-button.dl-btn {
-  background: #4a90d9;
-  color: #fff;
-  font-weight: 700;
-}
-
-/* 只針對開頭的 ⬇ 箭頭；按鈕文字現在包在第二個 span 裡（多語系用），
-   若沿用 `span` 選擇器會讓文字也被套上右邊距並變成非粗體。 */
-button.dl-btn > span:first-child { margin-right: 6px; font-weight: 400; }
-
-button.dl-btn:hover { background: #3a7bc0; }
-
-/* 課表檢視類下載（課表圖／PDF／Excel）：深綠色，與「匯入手錶用」的藍色按鈕區分 */
-button.dl-btn-green {
-  background: #2f6b4f;
-  color: #fff;
-  font-weight: 700;
-  border: none;
-  padding: 10px 18px;
-}
-
-button.dl-btn-green > span:first-child { margin-right: 6px; font-weight: 400; }
-
-button.dl-btn-green:hover { background: #25543e; }
-
-.view-downloads {
+/* ── 首屏 ────────────────────────────────────────────── */
+.hero-cols {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
+  gap: clamp(16px, 2.4vw, 26px);
+  align-items: stretch;
+  margin-top: clamp(20px, 3vw, 30px);
 }
 
-/* 換行時讓同一列的按鈕平均撐滿寬度，排列較整齊 */
-.view-downloads button { flex: 1 1 auto; }
+.setup-card { flex: 1 1 430px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.dl-card { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; scroll-margin-top: 80px; }
 
-#status { font-size: 15px; color: var(--muted); }
+.field-row { display: flex; flex-wrap: wrap; gap: 16px; }
+.field { flex: 1 1 190px; min-width: 0; }
 
-.pace-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
-}
-
-.pace-cell {
-  background: var(--navy);
-  border-radius: 10px;
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-}
-
-.pace-label { font-size: 15px; font-weight: 700; color: #ffffff; }
-
-.pace-value {
-  font-size: 24px;
+.field-label {
+  font-size: 12px;
   font-weight: 700;
-  color: var(--amber);
+  letter-spacing: .08em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  margin-bottom: 7px;
 }
 
-.pace-value small { font-size: 14px; font-weight: 400; color: #a8bbcb; margin-left: 2px; }
-
-.pace-sub { display: block; font-size: 14px; color: #a8bbcb; margin-top: 2px; }
-.pace-sub strong { color: #ffffff; font-weight: 700; }
-
-.category h3 {
-  font-size: 17px;
-  color: var(--muted);
-  margin: 14px 0 6px;
+.level-hint {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  border-left: 2px solid var(--accent);
+  padding-left: 11px;
 }
 
-.category ul { list-style: none; }
+.goal-block { border-top: 1px solid var(--line); padding-top: 16px; }
 
-.category li {
+.goal-stepper { display: flex; align-items: center; gap: 12px; }
+
+.step-btn {
+  width: 46px; height: 46px; flex: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  font-size: 19px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-btn:hover:not(:disabled) { background: var(--surface-2); }
+.step-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+.goal-readout { flex: 1; text-align: center; min-width: 0; }
+
+.goal-time {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(34px, 5.6vw, 52px);
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+
+.goal-range { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+
+.ghost-btn {
+  margin-top: 10px;
+  width: 100%;
+  border: 1px dashed var(--line);
+  background: transparent;
+  color: var(--ink-3);
+  border-radius: var(--r-sm);
+  padding: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.ghost-btn:hover { color: var(--ink-2); border-color: var(--ink-3); }
+
+.goal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.goal-chips[hidden] { display: none; }
+
+.goal-chips button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 13.5px;
+}
+.goal-chips button:hover:not(.active) { background: var(--surface-2); }
+.goal-chips button.active { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+
+/* ── 下載卡的統計格 ──────────────────────────────────── */
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.card-title { font-family: var(--display); font-weight: 700; font-size: 17px; }
+.card-meta { font-size: 12.5px; color: var(--ink-3); font-weight: 600; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
+
+.stat {
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+}
+
+.stat-v {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(19px, 2.4vw, 24px);
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+.stat-v small { font-size: 12px; font-weight: 700; color: var(--ink-3); margin-left: 2px; }
+.stat-k { font-size: 11.5px; color: var(--ink-3); font-weight: 600; margin-top: 2px; }
+
+/* ── 按鈕 ────────────────────────────────────────────── */
+.btn {
+  border: 0;
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+  font-weight: 700;
+  font-size: 15.5px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 7px 4px;
-  border-bottom: 1px solid var(--line);
-  font-size: 16px;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
 }
 
-.wname { color: var(--text); }
+.dl-arrow { font-weight: 400; }
 
-.btn-group { display: flex; gap: 6px; }
-.btn-group button { font-size: 14px; padding: 6px 14px; }
+.btn-blue { background: var(--blue); color: var(--blue-ink); }
+.btn-blue:hover { background: #356ca8; }
 
-.hint { font-size: 15px; color: var(--muted); margin-bottom: 8px; }
+.btn-green { background: var(--green); color: #fff; padding: 13px 16px; font-size: 14.5px; }
+.btn-green:hover { background: #25543e; }
 
-.video-embed {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  margin: 12px 0 6px;
-}
+.btn-outline { background: transparent; color: var(--blue); border: 1.5px solid var(--blue); }
+.btn-outline:hover { background: color-mix(in oklab, var(--blue) 12%, transparent); }
 
-.video-embed iframe {
-  width: 100%;
-  height: 100%;
+.dl-buttons { display: flex; flex-direction: column; gap: 9px; }
+.which-file { margin: 0; font-size: 13.5px; color: var(--ink-2); text-align: center; }
+
+.view-downloads { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.view-downloads .btn { flex: 1 1 220px; }
+
+/* ── 匯入教學分頁 ────────────────────────────────────── */
+.tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+
+.tab {
+  flex: 1 1 200px;
   border: 0;
-  border-radius: 12px;
+  background: var(--surface);
+  padding: 15px 16px;
+  text-align: left;
+  display: block;
+}
+.tab + .tab { border-left: 1px solid var(--line); }
+.tab:hover:not(.active) { background: var(--surface-2); }
+.tab.active { background: var(--brand); color: var(--on-brand); }
+
+.tab-title { display: block; font-weight: 700; font-size: 15.5px; }
+.tab-sub { display: block; font-size: 12.5px; opacity: .7; font-weight: 500; }
+
+.tab-body { padding: var(--cardpad); }
+
+.steps {
+  margin: 0; padding: 0; list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.steps[hidden] { display: none; }
+
+.steps li { display: flex; gap: 11px; align-items: flex-start; font-size: 14.5px; }
+
+.step-n {
+  width: 24px; height: 24px; flex: none;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 12.5px;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
 }
 
-.howto ol { padding-left: 22px; font-size: 16px; }
+.step-note { display: block; margin-top: 4px; color: var(--ink-3); font-size: 13.5px; }
 
-.howto code {
-  background: #eef3f7;
+.steps code, .hint code {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
   padding: 1px 6px;
   border-radius: 4px;
-  font-size: 15px;
+  font-size: 13.5px;
 }
 
-.legend {
+.privacy { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-3); }
+
+/* ── 配速卡 ──────────────────────────────────────────── */
+.pace-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(146px, 1fr)); gap: 10px; }
+
+.pace-cell {
+  background: var(--pace-bg);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 92px;
 }
 
-.legend-item {
-  font-size: 14px;
-  padding: 3px 12px;
-  border-radius: 20px;
+.pace-label { font-size: 15px; font-weight: 700; color: var(--pace-strong); }
+
+.pace-value {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(23px, 2.9vw, 30px);
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  color: var(--pace-num);
+}
+.pace-value small { font-size: 13px; font-weight: 600; color: var(--pace-ink); margin-left: 3px; }
+
+.pace-sub { display: block; font-size: 14px; color: var(--pace-ink); margin-top: 2px; }
+.pace-sub strong { color: var(--pace-strong); font-weight: 800; font-size: 1.08em; }
+
+.hint { font-size: 13.5px; color: var(--ink-2); line-height: 1.75; margin: 12px 0 0; }
+
+/* ── 18 週行事曆（CSS Grid）──────────────────────────── */
+.legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.legend-item { font-size: 12.5px; font-weight: 600; padding: 3px 11px; border-radius: 999px; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: clamp(26px, 3.4vw, 40px) repeat(7, minmax(0, 1fr)) clamp(34px, 4.4vw, 54px);
+  gap: 3px;
 }
 
-.calendar-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-#calendar {
-  border-collapse: collapse;
-  width: 100%;
-  table-layout: fixed;
-  /* 字級隨視窗縮放，讓整張 18 週表在手機上也不必橫向捲動 */
-  font-size: clamp(9px, 1.75vw, 14px);
-}
-
-#calendar th {
-  background: #eef1f4;
-  color: #5b6b7a;
-  padding: 6px 4px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-#calendar td {
-  border: 1px solid #fff;
-  padding: 5px 2px;
-  text-align: center;
-  vertical-align: middle;
-}
-
-/* 週次與週跑量欄較窄，七天平分剩餘寬度 */
-#calendar th:first-child, #calendar td:first-child { width: 7%; }
-#calendar th:last-child, #calendar td:last-child { width: 13%; }
-
-.cal-type { display: block; font-weight: 700; white-space: nowrap; }
-.cal-label { display: block; font-size: 0.92em; font-weight: 500; opacity: 0.9; white-space: nowrap; }
-
-/* 中文短名（輕鬆／速度／節奏）兩個字剛好，英文的 Strength / Recovery 會撐爆
-   table-layout: fixed 的格子。只放寬非中文，中文版面維持一模一樣。 */
-html[lang="ja"] .cal-type, html[lang="ja"] .cal-label,
-html[lang="en"] .cal-type, html[lang="en"] .cal-label {
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-/* 比賽日期：格子本來就有類型＋距離兩行，窄螢幕再加日期會擠爆，只在桌機寬度顯示 */
-.cal-date { display: none; }
-@media (min-width: 560px) {
-  .cal-date { display: block; font-size: 0.82em; font-weight: 500; opacity: 0.68; white-space: nowrap; }
-}
-
-.race-date-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 18px 0 4px;
-}
-
-.race-date-row label { font-weight: 600; color: var(--navy); }
-
-.race-date-row input[type="date"] {
-  font: inherit;
-  font-size: 16px;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--text);
-  background: #fff;
-}
-
-.race-date-note { font-size: 14px; color: #a05a00; }
-
-.cal-total {
-  background: #eef1f4;
-  color: var(--text);
+.cal-head {
+  font-size: clamp(11px, 1.4vw, 15px);
   font-weight: 700;
+  text-align: center;
+  padding: 2px 0 5px;
   white-space: nowrap;
+  overflow: hidden;
+  color: var(--ink-3);
 }
 
-/* 色票取自「漢森課表模板_互動版.xlsx」總課表圖例 */
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(3px, .6vw, 7px) 2px;
+  border-radius: var(--r-sm);
+  min-height: clamp(46px, 6vw, 68px);
+  text-align: center;
+  line-height: 1.2;
+  /* 字級隨視窗縮放，讓整張 18 週表在手機上也不必橫向捲動 */
+  font-size: clamp(11px, 1.65vw, 18px);
+  overflow: hidden;
+  border: 0;
+  font-family: inherit;
+  color: inherit;
+}
+
+button.cal-cell { cursor: pointer; }
+button.cal-cell:hover { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.cal-date { font-size: .82em; font-weight: 600; opacity: .72; }
+.cal-type { font-weight: 800; white-space: nowrap; }
+.cal-label { font-size: .94em; font-weight: 600; opacity: .94; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.cal-week, .cal-total { background: var(--surface-2); color: var(--ink-3); font-weight: 700; }
+.cal-total { color: var(--ink-2); white-space: nowrap; }
+
+.cal-tap {
+  margin: 14px auto 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-ink);
+  text-align: center;
+}
+
+/* 色票取自「漢森課表模板_互動版.xlsx」總課表圖例。
+   深色模式刻意不改：這六個顏色同時出現在 Excel、課表圖與 PDF 上，網頁改了就對不起來。 */
 .t-easy     { background: #9CC2E5; color: #143a5c; }
 .t-speed    { background: #FF9999; color: #741d1d; }
 .t-tempo    { background: #FFC000; color: #5c4300; }
 .t-strength { background: #C5E0B3; color: #33531f; }
 .t-long     { background: #0070C0; color: #ffffff; }
 .t-rest     { background: #7F7F7F; color: #f2f2f2; }
-.t-race     { background: var(--navy-deep); color: var(--amber); }
+.t-race     { background: #0d1f2e; color: #e8a33d; }
 
-.about-card {
+/* ── 比賽日期 ────────────────────────────────────────── */
+.race-date-card {
   display: flex;
-  gap: 18px;
+  flex-wrap: wrap;
   align-items: center;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 20px 22px;
+  gap: 10px 14px;
+  margin-top: 18px;
+  padding: 14px var(--cardpad);
 }
 
+.race-date-card label { font-weight: 700; font-size: 14.5px; }
+
+.race-date-card input[type="date"] {
+  font: inherit;
+  font-size: 15px;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.race-date-why { flex: 1 1 300px; min-width: 0; }
+.race-date-why p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-3); }
+.race-date-note { margin: 2px 0 0; font-size: 13px; color: #c0761a; font-weight: 600; }
+html[data-t="dark"] .race-date-note { color: var(--accent); }
+
+/* ── 課表清單 ────────────────────────────────────────── */
+.notes {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.notes li { display: flex; gap: 9px; align-items: flex-start; }
+.notes li::before {
+  content: "";
+  flex: none;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 9px;
+}
+.notes strong { color: var(--ink); }
+
+.workout-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); gap: 12px; }
+
+.category {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+}
+
+.category h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink-2);
+  letter-spacing: .02em;
+  margin-bottom: 8px;
+}
+
+.category ul { list-style: none; display: flex; flex-direction: column; }
+
+.category li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+}
+
+.wname { font-size: 14.5px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.btn-group { display: flex; gap: 6px; flex: none; }
+
+.btn-group button {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.btn-group button:hover { background: var(--surface); border-color: var(--ink-3); }
+
+/* ── 影片 ────────────────────────────────────────────── */
+.video-row { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+
+.video-embed {
+  flex: 1 1 420px;
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #0d1f2e;
+}
+
+.video-embed iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+/* 首屏不載入 YouTube：先放縮圖，點了才換成 iframe */
+.video-facade {
+  width: 100%; height: 100%;
+  border: 0; padding: 0;
+  display: block;
+  position: relative;
+  background: #0d1f2e center/cover no-repeat url("https://i.ytimg.com/vi/GahoTo3an5Q/hqdefault.jpg");
+}
+
+.video-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 18, 26, .12), rgba(8, 18, 26, .62)); }
+
+.video-btn {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 66px; height: 46px;
+  border-radius: 12px;
+  background: #e02f2f;
+  display: flex; align-items: center; justify-content: center;
+}
+.video-btn::after {
+  content: "";
+  width: 0; height: 0;
+  border-left: 16px solid #fff;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  margin-left: 4px;
+}
+.video-facade:hover .video-btn { background: #ff0000; }
+
+.video-label {
+  position: absolute; left: 14px; right: 14px; bottom: 12px;
+  color: #fff; font-size: 14px; font-weight: 700;
+  text-align: left; text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
+}
+
+.video-fallback { flex: 0 1 240px; margin: 0; color: var(--ink-3); }
+
+/* ── 關於作者 ────────────────────────────────────────── */
+.about-card { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+
 .about-avatar {
-  width: 72px;
-  height: 72px;
+  width: 76px; height: 76px; flex: none;
   border-radius: 50%;
   overflow: hidden;
-  flex-shrink: 0;
-  border: 2px solid #fff;
   box-shadow: 0 0 0 1px var(--line);
 }
 
 .about-avatar img {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: cover;
   object-position: center 22%;  /* 直式人像：構圖上移讓臉落在圓框中央 */
   display: block;
 }
 
-.about-name { font-size: 18px; font-weight: 700; color: var(--navy); margin: 0; }
-.about-role { font-size: 14px; font-weight: 500; color: #4a90d9; margin: 2px 0 0; }
-.about-bio { font-size: 14px; color: var(--muted); margin: 8px 0 14px; }
+.about-info { flex: 1 1 260px; min-width: 0; }
+.about-name { font-family: var(--display); font-weight: 700; font-size: 18px; }
+.about-role { font-size: 13.5px; font-weight: 600; color: var(--accent-ink); margin-top: 1px; }
+.about-bio { margin: 7px 0 0; font-size: 14px; color: var(--ink-2); }
 
-.social-links {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+.social-links { display: flex; flex-wrap: wrap; gap: 9px; }
 
 .social {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 16px;
+  padding: 9px 16px;
   border-radius: 999px;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
   border: 1.5px solid;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background .15s, border-color .15s;
 }
 
 .social svg { flex-shrink: 0; }
-.social.yt { color: #d90000; border-color: #f2cfcf; }
+.social.yt { color: #d90000; border-color: #e0bcbc; }
 .social.yt:hover { background: #fdf3f3; border-color: #d90000; }
-.social.ig { color: #c13584; border-color: #eed0e3; }
+.social.ig { color: #c13584; border-color: #e6c6dc; }
 .social.ig:hover { background: #fdf4fa; border-color: #c13584; }
+html[data-t="dark"] .social.yt { color: #ff6b6b; border-color: #5a2b2b; }
+html[data-t="dark"] .social.yt:hover { background: #2a1616; }
+html[data-t="dark"] .social.ig { color: #e884c0; border-color: #522c44; }
+html[data-t="dark"] .social.ig:hover { background: #271523; }
+
+footer {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  justify-content: space-between;
+}
+footer p { margin: 0; }
+.visitor-count { font-weight: 700; color: var(--ink-2); }
+
+/* ── 手機底部固定操作列 ──────────────────────────────── */
+.mobilebar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 45;
+  background: var(--bar-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line);
+  padding: 9px var(--edge) calc(9px + env(safe-area-inset-bottom));
+  align-items: center;
+  gap: 10px;
+}
+
+.mobilebar-info { min-width: 0; flex: 1; }
+.mobilebar-plan { font-size: 11.5px; color: var(--ink-3); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mobilebar-goal { font-family: var(--display); font-weight: 800; font-size: 19px; line-height: 1.1; }
+.mobilebar-btn { flex: none; padding: 11px 16px; font-size: 15px; }
+
+/* ── 當日課表明細（底部彈出）────────────────────────── */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(8, 18, 26, .5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.sheet-backdrop[hidden] { display: none; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.sheet {
+  width: 100%;
+  max-width: 600px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r) var(--r) 0 0;
+  padding: var(--cardpad) var(--cardpad) calc(var(--cardpad) + env(safe-area-inset-bottom));
+  animation: rise .22s ease-out;
+  box-shadow: 0 -20px 50px -30px rgba(0, 0, 0, .6);
+}
+
+.sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.sheet-when { font-size: 12.5px; color: var(--ink-3); font-weight: 700; letter-spacing: .06em; }
+.sheet-title { font-family: var(--display); font-weight: 800; font-size: clamp(20px, 3vw, 26px); letter-spacing: -.02em; margin-top: 2px; }
+.sheet-text { margin: 12px 0 0; font-size: 15.5px; line-height: 1.75; }
+.sheet-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+.tag { font-size: 12.5px; font-weight: 700; padding: 4px 12px; border-radius: 999px; }
+.tag-plain { background: var(--surface-2); color: var(--ink-2); }
+
+/* ── 狀態提示（打包／產生 PDF 時）────────────────────── */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + var(--mbar-h));
+  transform: translateX(-50%);
+  z-index: 70;
+  background: #0d1f2e;
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  animation: rise .2s ease-out;
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .6);
+  max-width: 88vw;
+  text-align: center;
+}
+.toast[hidden] { display: none; }
+
+/* ── 響應式 ──────────────────────────────────────────── */
+@media (max-width: 720px) {
+  :root { --mbar-h: 72px; }
+  .mobilebar { display: flex; }
+  .brand-author { display: none; }
+  .lang-full { display: none; }
+  .lang-short { display: inline; }
+  /* 中文短名（輕鬆／速度／節奏）兩個字剛好，英文的 Strength / Recovery 會撐爆格子 */
+  html[lang="ja"] .cal-label, html[lang="en"] .cal-label { white-space: normal; overflow-wrap: anywhere; }
+}
+
+/* 比賽日期讓格子多一行，窄螢幕會擠爆，只在桌機寬度顯示 */
+@media (max-width: 559px) {
+  .cal-date { display: none; }
+}
 
 @media (max-width: 480px) {
   .about-card { flex-direction: column; text-align: center; }
   .social-links { justify-content: center; }
+  footer { justify-content: flex-start; }
 }
 
-footer {
-  margin-top: 28px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-  font-size: 14px;
-  color: var(--muted);
-}
-
-footer a { color: var(--navy); }
-
-.visitor-count { margin-top: 8px; font-weight: 600; color: var(--navy); }
-
-@media (max-width: 480px) {
-  .card { padding: 22px 16px; }
-  .control { align-items: stretch; flex-direction: column; }
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .toast { animation: none; }
 }

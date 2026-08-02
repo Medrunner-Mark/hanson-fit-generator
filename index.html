@@ -10,130 +10,261 @@
 <link rel="alternate" hreflang="ja" href="https://medrunner-mark.github.io/hanson-fit-generator/?lang=ja">
 <link rel="alternate" hreflang="en" href="https://medrunner-mark.github.io/hanson-fit-generator/?lang=en">
 <link rel="alternate" hreflang="x-default" href="https://medrunner-mark.github.io/hanson-fit-generator/">
+<!-- 深色模式要在第一次 paint 之前就定案，否則淺色底會閃一下才變深 -->
+<script>
+  try {
+    var s = localStorage.getItem("hfg.theme");
+    document.documentElement.dataset.t =
+      s || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  } catch (e) { document.documentElement.dataset.t = "light"; }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main class="card">
-  <header>
-    <div class="header-top">
-      <h1 data-i18n="ui.h1">漢森課表產生器</h1>
-      <div class="plan-switch lang-switch" id="lang-switch" role="group" aria-label="Language">
-        <button data-lang="zh">中文</button>
-        <button data-lang="ja">日本語</button>
-        <button data-lang="en">English</button>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">H</div>
+      <div class="brand-text">
+        <span class="brand-title" data-i18n="ui.h1">漢森課表產生器</span>
+        <span class="brand-author" data-i18n="ui.authorName">Med日跑者</span>
       </div>
     </div>
-    <p class="subtitle" data-i18n="ui.subtitle">選擇距離與目標時間，下載整套 18 週漢森課表，匯入 Garmin 手錶或 Connect 網頁版。</p>
-  </header>
-
-  <div class="switch-row">
-    <div class="plan-switch" id="distance-switch">
-      <button data-distance="marathon" class="active" data-i18n="ui.dist.marathon">全程馬拉松</button>
-      <button data-distance="half" data-i18n="ui.dist.half">半程馬拉松</button>
-    </div>
-    <div class="plan-switch" id="level-switch">
-      <button data-level="advanced" class="active" data-i18n="ui.level.advanced">進階</button>
-      <button data-level="beginner" data-i18n="ui.level.beginner">初階</button>
+    <div class="topbar-actions">
+      <div class="lang-bar">
+        <div class="seg lang-switch" id="lang-switch" role="group" aria-label="Language">
+          <button data-lang="zh">中文</button>
+          <button data-lang="ja"><span class="lang-full">日本語</span><span class="lang-short">JA</span></button>
+          <button data-lang="en"><span class="lang-full">English</span><span class="lang-short">EN</span></button>
+        </div>
+      </div>
+      <button id="theme-btn" class="icon-btn" data-i18n-attr="aria-label:nx.theme;title:nx.theme" aria-label="切換深色／淺色模式"><span id="theme-icon">☀</span></button>
     </div>
   </div>
-  <p id="level-hint" class="level-hint"></p>
+</header>
 
-  <section class="control">
-    <label for="goal-select" data-i18n="ui.goalLabel">目標完賽時間</label>
-    <select id="goal-select"></select>
-    <div class="dl-buttons">
-      <button id="zip-btn" class="primary dl-btn"><span aria-hidden="true">⬇</span><span data-i18n="ui.btn.fitZip">FIT 全部下載（手錶接電腦用）</span></button>
-      <button id="json-zip-btn" class="primary dl-btn"><span aria-hidden="true">⬇</span><span data-i18n="ui.btn.jsonZip">JSON 全部下載（Connect網頁版用）</span></button>
+<main class="wrap">
+
+  <!-- ── 首屏：左邊設定、右邊下載 ── -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow" data-i18n="nx.eyebrow">漢森馬拉松訓練法 · 18 週</p>
+      <h1 data-i18n="nx.h1">選好目標時間，帶走整套課表</h1>
+      <p class="hero-sub" data-i18n="nx.heroSub">距離、程度、目標完賽時間，三個選擇就能產生可匯入 Garmin 手錶的 18 週訓練課表。</p>
     </div>
-    <span id="status"></span>
+
+    <div class="hero-cols">
+      <div class="card setup-card">
+        <div class="field-row">
+          <div class="field">
+            <div class="field-label" data-i18n="nx.dist">距離</div>
+            <div class="seg seg-wide" id="distance-switch">
+              <button data-distance="marathon" class="active" data-i18n="ui.dist.marathon">全程馬拉松</button>
+              <button data-distance="half" data-i18n="ui.dist.half">半程馬拉松</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label" data-i18n="nx.level">程度</div>
+            <div class="seg seg-wide" id="level-switch">
+              <button data-level="advanced" class="active" data-i18n="ui.level.advanced">進階</button>
+              <button data-level="beginner" data-i18n="ui.level.beginner">初階</button>
+            </div>
+          </div>
+        </div>
+
+        <p id="level-hint" class="level-hint"></p>
+
+        <div class="goal-block">
+          <div class="field-label" data-i18n="ui.goalLabel">目標完賽時間</div>
+          <div class="goal-stepper">
+            <button id="goal-slower" class="step-btn" data-i18n-attr="aria-label:nx.slower;title:nx.slower" aria-label="調慢目標時間">−</button>
+            <div class="goal-readout">
+              <div id="goal-time" class="goal-time">4:00</div>
+              <div id="goal-range" class="goal-range"></div>
+            </div>
+            <button id="goal-faster" class="step-btn" data-i18n-attr="aria-label:nx.faster;title:nx.faster" aria-label="調快目標時間">＋</button>
+          </div>
+          <button id="all-goals-btn" class="ghost-btn" aria-expanded="false"></button>
+          <div id="goal-chips" class="goal-chips" hidden></div>
+        </div>
+      </div>
+
+      <div class="card dl-card" id="dl">
+        <div class="card-head">
+          <span class="card-title" data-i18n="nx.yourPlan">你的這份課表</span>
+          <span id="plan-name" class="card-meta"></span>
+        </div>
+        <div id="plan-stats" class="stat-grid"></div>
+        <div class="dl-buttons">
+          <button id="zip-btn" class="btn btn-blue"><span class="dl-arrow" aria-hidden="true">⬇</span><span data-i18n="ui.btn.fitZip">FIT 全部下載（手錶接電腦用）</span></button>
+          <button id="json-zip-btn" class="btn btn-blue"><span class="dl-arrow" aria-hidden="true">⬇</span><span data-i18n="ui.btn.jsonZip">JSON 全部下載（Connect網頁版用）</span></button>
+        </div>
+        <p class="which-file" data-i18n-html="nx.whichFile">不知道要下載 FIT 檔還是 JSON 檔？<a href="#import">看這裡</a></p>
+      </div>
+    </div>
   </section>
 
-  <section>
+  <!-- ── 匯入教學：提到下載鈕正下方 ── -->
+  <section class="sec" id="import">
+    <div class="sec-head">
+      <h2 data-i18n="nx.h2.import">下載完，怎麼進手錶？</h2>
+      <span class="sec-sub" data-i18n="nx.importSub">兩條路，挑一條就好</span>
+    </div>
+    <div class="card card-flush">
+      <div class="tabs" id="import-tabs" role="tablist">
+        <button class="tab active" data-tab="fit" role="tab" aria-selected="true" aria-controls="tab-fit">
+          <span class="tab-title" data-i18n="nx.tab.fit">要接電腦，使用 FIT 檔</span>
+          <span class="tab-sub" data-i18n="nx.tab.fitSub">要 USB 線，一次全部匯入</span>
+        </button>
+        <button class="tab" data-tab="json" role="tab" aria-selected="false" aria-controls="tab-json">
+          <span class="tab-title" data-i18n="nx.tab.json">不接電腦，使用 JSON 檔配合 Garmin Connect</span>
+          <span class="tab-sub" data-i18n="nx.tab.jsonSub">裝瀏覽器外掛，一次一個檔案匯入</span>
+        </button>
+      </div>
+      <div class="tab-body">
+        <ol class="steps" id="tab-fit" role="tabpanel">
+          <li><span class="step-n">1</span><span data-i18n="howto.fit.1">用Garmin充電線把 Garmin 手錶接上電腦。</span></li>
+          <li><span class="step-n">2</span><span data-i18n-html="howto.fit.2">把下載的 .fit 檔案全部複製到手錶的 <code>GARMIN/Workouts</code> 資料夾。</span></li>
+          <li><span class="step-n">3</span><span data-i18n-html="nx.howtoFit3">拔線，手錶上到「訓練 → 訓練課表」就能看到匯入的課表。<span class="step-note">手錶上只是「有這份課表」；要把它排到哪一天，仍要在手機 App 或電腦的 Garmin Connect 行事曆上安排。</span></span></li>
+        </ol>
+        <ol class="steps" id="tab-json" role="tabpanel" hidden>
+          <li><span class="step-n">1</span><span data-i18n-html="howto.json.1">安裝瀏覽器外掛 <a href="https://chromewebstore.google.com/detail/share-your-garmin-connect/kdpolhnlnkengkmfncjdbfdehglepmff" target="_blank" rel="noopener">Share your Garmin Connect workout</a>（第三方開源外掛）。</span></li>
+          <li><span class="step-n">2</span><span data-i18n="howto.json.2">下載上方的 .json 課表檔。</span></li>
+          <li><span class="step-n">3</span><span data-i18n-html="howto.json.3">登入 <a href="https://connect.garmin.com/app/workouts" target="_blank" rel="noopener">Garmin Connect 的訓練課表頁</a>，按外掛加上的「Import Workout」按鈕選擇 .json 檔匯入（目前一次只能匯入一個檔案）。</span></li>
+          <li><span class="step-n">4</span><span data-i18n="howto.json.4">匯入後課表就在你的 Connect 帳號裡，可排入行事曆、由手機 App 同步到手錶，全程不用接線。</span></li>
+        </ol>
+        <p class="privacy" data-i18n="hint.privacy">所有計算與檔案產生都在你的瀏覽器裡完成，不會上傳任何資料。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 訓練配速 ── -->
+  <section class="sec">
     <h2 data-i18n="ui.h2.paces">你的訓練配速</h2>
+    <p id="pace-sub" class="sec-sub-line"></p>
     <div id="pace-summary" class="pace-grid"></div>
-    <p class="hint" style="margin-top: 10px;" data-i18n-html="hint.pace">
+    <p class="hint" data-i18n-html="hint.pace">
       輕鬆有氧A＝慢速輕鬆跑：用於課表中的暖身與收操、強度訓練的隔天。<br>
       輕鬆有氧B＝快速輕鬆跑：用於前一天是休息日或輕鬆跑的日子。<br>
       速度跑配速即配速表的400公尺配速（範圍前後各加5秒，中點恰為表定配速）。
     </p>
   </section>
 
-  <section>
+  <!-- ── 18 週總覽 ── -->
+  <section class="sec">
     <h2 data-i18n="ui.h2.calendar">18週課表總覽</h2>
-    <p class="hint" data-i18n="hint.calendar">列＝週次、欄＝星期一到日，比賽日在第18週的星期天。最右欄是當週跑量（含速度/強化/節奏跑中的前後緩跑各2K）。</p>
-    <div id="calendar-legend" class="legend"></div>
-    <div class="calendar-wrap">
-      <table id="calendar"></table>
+    <p class="sec-sub-line" data-i18n="hint.calendar">列＝週次、欄＝星期一到日，比賽日在第18週的星期天。最右欄是當週跑量（含速度/強化/節奏跑中的前後緩跑各2K）。</p>
+
+    <div class="card">
+      <div id="calendar-legend" class="legend"></div>
+      <div id="calendar" class="cal-grid"></div>
+      <p class="cal-tap" data-i18n="nx.calTap">👆 點任一格，看當天的完整課表與實際配速</p>
     </div>
-    <div class="race-date-row">
+
+    <div class="card race-date-card">
       <label for="race-date" data-i18n="ui.raceDateLabel">比賽日期（選填）</label>
       <input type="date" id="race-date">
-      <span id="race-date-note" class="race-date-note"></span>
+      <div class="race-date-why">
+        <p data-i18n="nx.raceDateWhy">填了之後，網頁行事曆與 PDF 課表的每一天都會自動標上日期——以「第 18 週星期日＝比賽日」往前回推 125 天。不填就完全不顯示日期。</p>
+        <p id="race-date-note" class="race-date-note"></p>
+      </div>
     </div>
+
     <div class="view-downloads">
-      <button id="poster-btn" class="primary dl-btn-green"><span aria-hidden="true">⬇</span><span data-i18n="ui.btn.poster">下載課表圖（直式圖，適合發 IG）</span></button>
-      <button id="pdf-btn" class="primary dl-btn-green"><span aria-hidden="true">⬇</span><span data-i18n="ui.btn.pdf">PDF 課表（A4 可列印）</span></button>
-      <button id="xlsx-btn" class="primary dl-btn-green"><span aria-hidden="true">⬇</span><span data-i18n="ui.btn.xlsx">Excel 互動模板（有詳細配速說明）</span></button>
+      <button id="poster-btn" class="btn btn-green"><span class="dl-arrow" aria-hidden="true">⬇</span><span data-i18n="ui.btn.poster">下載課表圖（直式圖，適合發 IG）</span></button>
+      <button id="pdf-btn" class="btn btn-green"><span class="dl-arrow" aria-hidden="true">⬇</span><span data-i18n="ui.btn.pdf">PDF 課表（A4 可列印）</span></button>
+      <button id="xlsx-btn" class="btn btn-green"><span class="dl-arrow" aria-hidden="true">⬇</span><span data-i18n="ui.btn.xlsx">Excel 互動模板（有詳細配速說明）</span></button>
     </div>
   </section>
 
-  <section>
+  <!-- ── 課表清單 ── -->
+  <section class="sec">
     <h2 data-i18n="ui.h2.workouts">課表清單</h2>
-    <p class="hint" data-i18n="hint.workouts">重複的課表只需要一份——在手錶或 Garmin Connect 裡同一份課表可以重複安排到不同週次。各課表對應週次請參考影片說明。</p>
-    <div class="video-embed">
-      <iframe src="https://www.youtube-nocookie.com/embed/GahoTo3an5Q" title="用漢森理論打造你的全馬課表｜Med日跑者" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+    <ul class="notes">
+      <li data-i18n="hint.workouts">重複的課表只需要一份——在手錶或 Garmin Connect 裡同一份課表可以重複安排到不同週次。各課表對應週次請參考影片說明。</li>
+      <li data-i18n-html="nx.singleNote">這一區是<strong>一份一份單獨下載</strong>，想補某一份課表時才用得到。大多數人不需要——直接用上面的「FIT／JSON 全部下載」<a href="#dl">打包整套帶走</a>就好。</li>
+    </ul>
+    <div id="workout-list" class="workout-grid"></div>
+
+    <div class="video-row">
+      <div class="video-embed" id="video-embed">
+        <button id="video-play" class="video-facade" type="button">
+          <span class="video-shade"></span>
+          <span class="video-btn" aria-hidden="true"></span>
+          <span class="video-label" data-i18n="nx.play">用漢森理論打造你的全馬課表｜點擊播放</span>
+        </button>
+      </div>
+      <p class="hint video-fallback" data-i18n-html="hint.videoFallback">影片無法播放？<a href="https://youtu.be/GahoTo3an5Q" target="_blank" rel="noopener">直接在 YouTube 開啟</a></p>
     </div>
-    <p class="hint" data-i18n-html="hint.videoFallback">影片無法播放？<a href="https://youtu.be/GahoTo3an5Q" target="_blank" rel="noopener">直接在 YouTube 開啟</a></p>
-    <div id="workout-list"></div>
   </section>
 
-  <section class="howto">
-    <h2 data-i18n="ui.h2.howtoFit">怎麼由Garmin電腦版匯入手錶（FIT 檔）</h2>
-    <ol>
-      <li data-i18n="howto.fit.1">用Garmin充電線把 Garmin 手錶接上電腦。</li>
-      <li data-i18n-html="howto.fit.2">把下載的 .fit 檔案全部複製到手錶的 <code>GARMIN/Workouts</code> 資料夾。</li>
-      <li data-i18n="howto.fit.3">拔線，手錶上到「訓練 → 訓練課表」就能看到匯入的課表。</li>
-    </ol>
-    <h2 data-i18n="ui.h2.howtoJson">不想接線？透過 Garmin Connect 網頁版匯入（JSON 檔）</h2>
-    <ol>
-      <li data-i18n-html="howto.json.1">安裝瀏覽器外掛 <a href="https://chromewebstore.google.com/detail/share-your-garmin-connect/kdpolhnlnkengkmfncjdbfdehglepmff" target="_blank" rel="noopener">Share your Garmin Connect workout</a>（第三方開源外掛）。</li>
-      <li data-i18n="howto.json.2">下載上方的 .json 課表檔。</li>
-      <li data-i18n-html="howto.json.3">登入 <a href="https://connect.garmin.com/app/workouts" target="_blank" rel="noopener">Garmin Connect 的訓練課表頁</a>，按外掛加上的「Import Workout」按鈕選擇 .json 檔匯入（目前一次只能匯入一個檔案）。</li>
-      <li data-i18n="howto.json.4">匯入後課表就在你的 Connect 帳號裡，可排入行事曆、由手機 App 同步到手錶，全程不用接線。</li>
-    </ol>
-    <p class="hint" data-i18n="hint.privacy">所有計算與檔案產生都在你的瀏覽器裡完成，不會上傳任何資料。</p>
-  </section>
-
-  <section class="about">
-    <h2 data-i18n="ui.h2.about">關於作者</h2>
-    <div class="about-card">
+  <!-- ── 關於作者 ── -->
+  <section class="sec">
+    <h2 class="sr-only" data-i18n="ui.h2.about">關於作者</h2>
+    <div class="card about-card">
       <div class="about-avatar">
-        <img src="avatar.jpg" alt="Med日跑者" width="72" height="72" data-i18n-attr="alt:ui.authorName">
+        <img src="avatar.jpg" alt="Med日跑者" width="76" height="76" data-i18n-attr="alt:ui.authorName">
       </div>
       <div class="about-info">
         <p class="about-name" data-i18n="ui.authorName">Med日跑者</p>
         <p class="about-role" data-i18n="ui.authorRole">住院醫師 × 每日跑者</p>
         <p class="about-bio" data-i18n="ui.authorBio">希望幫助更多跑者科學化訓練。歡迎在社群追蹤我的訓練與賽事紀錄。</p>
-        <div class="social-links">
-      <a class="social yt" href="https://www.youtube.com/@Med-runner-Mark" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.5 15.5v-7l6.3 3.5-6.3 3.5z"/></svg>
-        <span data-i18n="ui.social.yt">YouTube 頻道</span>
-      </a>
-      <a class="social ig" href="https://www.instagram.com/medrunner.mark" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.25 2.2.42.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.17.4.36 1 .42 2.2.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.06 1.2-.25 1.8-.42 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.17-1 .36-2.2.42-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.06-1.8-.25-2.2-.42-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.17-.4-.36-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.06-1.2.25-1.8.42-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.17 1-.36 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 3.2A6.6 6.6 0 1 0 12 18.6 6.6 6.6 0 0 0 12 5.4zm0 10.9a4.3 4.3 0 1 1 0-8.6 4.3 4.3 0 0 1 0 8.6zm6.8-11.2a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
-        <span data-i18n="ui.social.ig">Instagram</span>
+      </div>
+      <div class="social-links">
+        <a class="social yt" href="https://www.youtube.com/@Med-runner-Mark" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.5 15.5v-7l6.3 3.5-6.3 3.5z"/></svg>
+          <span data-i18n="ui.social.yt">YouTube 頻道</span>
         </a>
-        </div>
+        <a class="social ig" href="https://www.instagram.com/medrunner.mark" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.25 2.2.42.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.17.4.36 1 .42 2.2.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.06 1.2-.25 1.8-.42 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.17-1 .36-2.2.42-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.06-1.8-.25-2.2-.42-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.17-.4-.36-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.06-1.2.25-1.8.42-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.17 1-.36 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 3.2A6.6 6.6 0 1 0 12 18.6 6.6 6.6 0 0 0 12 5.4zm0 10.9a4.3 4.3 0 1 1 0-8.6 4.3 4.3 0 0 1 0 8.6zm6.8-11.2a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
+          <span data-i18n="ui.social.ig">Instagram</span>
+        </a>
       </div>
     </div>
-  </section>
 
-  <footer>
-    <p data-i18n="ui.footer.credit">課表結構與配速依據《漢森馬拉松訓練法》｜工具由 Med日跑者 製作</p>
-    <p data-i18n-html="ui.footer.thanks">配速參考並感謝 Hansons 官方訓練法與 <a href="https://lukehumphreyrunning.com/" target="_blank" rel="noopener">Luke Humphrey Running</a> 官方計算機。</p>
-    <p id="visitor-count" class="visitor-count"></p>
-  </footer>
+    <footer>
+      <div>
+        <p data-i18n="ui.footer.credit">課表結構與配速依據《漢森馬拉松訓練法》｜工具由 Med日跑者 製作</p>
+        <p data-i18n-html="ui.footer.thanks">配速參考並感謝 Hansons 官方訓練法與 <a href="https://lukehumphreyrunning.com/" target="_blank" rel="noopener">Luke Humphrey Running</a> 官方計算機。</p>
+      </div>
+      <p id="visitor-count" class="visitor-count"></p>
+    </footer>
+  </section>
 </main>
+
+<!-- ── 手機底部固定操作列 ── -->
+<div class="mobilebar">
+  <div class="mobilebar-info">
+    <div id="m-plan-name" class="mobilebar-plan"></div>
+    <div id="m-goal-time" class="mobilebar-goal"></div>
+  </div>
+  <button id="m-fit-btn" class="btn btn-blue mobilebar-btn">⬇ FIT</button>
+  <button id="m-json-btn" class="btn btn-outline mobilebar-btn">JSON</button>
+</div>
+
+<!-- ── 點行事曆格子彈出的當日明細 ── -->
+<div class="sheet-backdrop" id="day-sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sheet-head">
+      <div>
+        <div id="sheet-when" class="sheet-when"></div>
+        <div id="sheet-title" class="sheet-title"></div>
+      </div>
+      <button id="sheet-close" class="icon-btn" data-i18n-attr="aria-label:nx.closeDetail;title:nx.closeDetail" aria-label="關閉">✕</button>
+    </div>
+    <p id="sheet-text" class="sheet-text"></p>
+    <div class="sheet-tags">
+      <span id="sheet-type" class="tag"></span>
+      <span id="sheet-km" class="tag tag-plain"></span>
+    </div>
+  </div>
+</div>
+
+<div id="status" class="toast" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
