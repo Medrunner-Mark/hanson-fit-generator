@@ -2,8 +2,8 @@
 // 使用 Garmin 官方 JS SDK（瀏覽器端執行，不經任何伺服器）。
 
 import { Encoder, Profile } from "https://esm.sh/@garmin/fitsdk@21.171.0";
-import { fmtPace, paceToScaledMps } from "./paces.js";
-import { workoutLabel } from "./workout-meta.js";
+import { fmtPace, paceToScaledMps, goalCode } from "./paces.js";
+import { workoutLabel, workoutType, workoutSpec } from "./workout-meta.js";
 import { fileStem } from "./plans.js";
 import { t } from "./i18n.js";
 
@@ -78,11 +78,22 @@ export function workoutFileName(workout, tier, plan) {
   return `${fileStem(plan, tier)}_${workoutLabel(workout)}`;
 }
 
-// 錶上與 Garmin Connect 顯示用的課表名稱。目前與檔名完全相同——刻意分成兩個函式是
-// 為了將來：日文課表名較長，若發現部分 Garmin 錶會截斷顯示，只要改這裡縮短即可，
-// 不會動到檔名（作者的教學影片截圖依賴檔名不變）。
+// 錶上與 Garmin Connect 顯示用的課表名稱（FIT wkt_name／JSON workoutName）。
+// 與檔名分開。舊款／中階 Garmin 把 wkt_name 存在固定大小的緩衝區裡（FR630/645 約
+// 15 字元、FR255 約 32 bytes），超過就截掉，然後用截掉後的字串去重——2026-09 一位
+// FR255 觀眾匯入 17 份只剩 4 份，原因是當時名稱等於檔名「漢森初階半馬sub225_速度跑12x400」，
+// 前綴 25 bytes 把能區分課表的 12x400 擠出緩衝區，同類課表全變同名。
+// 所以：品牌縮成一個字、規格盡量往前、類別放最後（同規格不同類別的只有 14K/16K 節奏 vs 長跑）。
+// 組合方式在字典 wkt.name 裡，三語各自決定分隔符。檔名（workoutFileName）維持不變，
+// 作者教學影片的截圖依賴它。
 export function wktName(workout, tier, plan) {
-  return workoutFileName(workout, tier, plan);
+  return t("wkt.name", {
+    brand: t("wkt.brand"),
+    plan: t(`wkt.plan.${plan.key}`),
+    goal: goalCode(tier.goal),
+    spec: workoutSpec(workout),
+    cat: t(`wkt.cat.${workoutType(workout)}`),
+  });
 }
 
 export function buildWorkoutFit(workout, tier, plan) {

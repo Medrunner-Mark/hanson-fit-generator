@@ -10,6 +10,7 @@
 //   poster.* pdf.*        畫布上的文字
 //   fit.*   ← 會寫進 FIT／JSON，顯示在使用者的手錶上（螢幕小，要短）
 //   file.*  ← 會變成下載檔名（英文一律純 ASCII）
+//   wkt.*   ← 錶上顯示的課表名稱（與檔名分開；舊款 Garmin 會截到 15–32 bytes）
 //
 // 插值一律用 {name} 搭配 params 物件，字典裡不放 function：function 沒辦法做
 // 完整性比對，也會把邏輯藏進資料層。語言差異一律用資料表達，例如 wk.label 中日文
@@ -277,6 +278,27 @@ export const STRINGS = {
   "file.xlsxName":    { zh: "{legacy}",
                         en: "{prefix}_Interactive-Template",
                         ja: "{prefix}_インタラクティブテンプレート" },
+
+  // ── 錶上／Connect 清單顯示的課表名稱（FIT wkt_name、JSON workoutName）──
+  // 與檔名刻意分開。舊款／中階 Garmin（FR630/645 約 15 字元、FR255 約 32 bytes）把
+  // wkt_name 存在固定大小的緩衝區裡，超過就截掉，再用截掉後的字串去重——2026-09 一位
+  // FR255 觀眾匯入 17 份只剩 4 份，就是「漢森初階半馬sub225_」這 25 bytes 的前綴把後面
+  // 能區分課表的 12x400 擠掉了。中文一字 3 bytes，所以規格要盡量往前放、品牌縮成一個字。
+  // 這組名字在 32 bytes 內對四份課表三種語言都兩兩可分（fitgen.js 有驗證腳本）。
+  // 日文刻意跟英文一模一樣：片假名「ハンソンズ」5 字就 15 bytes，怎麼排都塞不下。
+  // 檔名（file.prefix.*）維持不變——作者教學影片的截圖依賴檔名。
+  "wkt.name":  { zh: "{brand}_{plan}{goal}_{spec}{cat}", en: "{brand}_{plan}_{goal}_{spec}_{cat}", ja: "{brand}_{plan}_{goal}_{spec}_{cat}" },
+  "wkt.brand": { zh: "漢", en: "HS", ja: "HS" },
+  "wkt.plan.marathon-advanced": { zh: "進全", en: "AdvFM", ja: "AdvFM" },
+  "wkt.plan.marathon-beginner": { zh: "初全", en: "BegFM", ja: "BegFM" },
+  "wkt.plan.half-advanced":     { zh: "進半", en: "AdvHM", ja: "AdvHM" },
+  "wkt.plan.half-beginner":     { zh: "初半", en: "BegHM", ja: "BegHM" },
+  "wkt.cat.speed":    { zh: "速度", en: "Speed", ja: "Speed" },
+  "wkt.cat.strength": { zh: "強化", en: "Strength", ja: "Strength" },
+  "wkt.cat.tempo":    { zh: "節奏", en: "Tempo", ja: "Tempo" },
+  "wkt.cat.long":     { zh: "長跑", en: "Long", ja: "Long" },
+  // 唯一的 alt 課表是 90min 漸速跑；在手腕上「漸速」比「替代」有用
+  "wkt.cat.alt":      { zh: "漸速", en: "Prog", ja: "Prog" },
 
   // ── FIT／JSON 步驟備註（運動中顯示在手錶螢幕上，要短）──
   "fit.wu":            { zh: "暖身 恢復跑配速", en: "Warm-up @ recovery pace", ja: "アップ リカバリーペース" },
